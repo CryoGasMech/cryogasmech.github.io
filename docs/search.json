@@ -1,31 +1,66 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Engineering Projects",
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
     "section": "",
-    "text": "This website is a collection of engineering projects, home projects, calculations, and analysis. I would like to build out a site where I can access common technical knowledge. In my line of work, diverse technical projects tend to be lumped into handfuls of months or years as projects shift around. Recently I find myself digging up project work from 5-10 years prior, and trying to remember why we made the decisiosn at the time.\nTimes are changing and AI tools will soon (can already) do everything I intend to document on this site, but it will be nice to have a fixed set of data analyzed and verified that I can come back to wihtout wondering whether or not AI crapped itself or picked a random number in the middle of an analysis, which is still common. AI can do a lot of things extremely well where accuracy is not important, but for experimental sciences this couldn’t be further from the truth. That being said, I use AI for a lot of tasking now. No more looking at help files, no more coding from scratch, CAD and CNC programming are next on the list to get overtaken by AI efficiency. As scary as AI can be portrayed, I’m actually excited to have it take over all of the low-level operations of day to day technical/engineering work. The real challenge down the road will be how people can mentally manage all of the additional work and diversity of knowledge that AI will enable."
+    "text": "This notebook shows common dimensions of SS Swagelok tubing and estimates steady-state heat conducted down the length of a 316 stainless steel tube, from a warm end to a cold end. Often times in cryogenic gas systems, SS tubing is used to traverse a cryostat from room temperature down to cryogenic temperatures. Estimating the heat load can be useful to figure out if you need more tubing length or a smaller diameter to reduce heat loads on the cryostat.\nHere we use the NIST cryogenic thermal-conductivity curve fit for Type 316 stainless steel:\n\nTemperature (T): kelvin (K)\nThermal conductivity (k(T)): W/(m·K)\nNIST measured-data range: 4–300 K\n\nNIST source: Material Properties: 316 Stainless Steel\nPhysical model: one-dimensional, steady-state axial conduction through the metal annular cross-section of a straight tube. The two ends are held at specified temperatures. The model assumes no heat exchange with the surroundings along the tube, no parallel heat paths through fittings/supports, and constant tube dimensions.\nThis is different from radial heat transfer through the tube wall. Here, the heat flows parallel to the tube axis.\nNIST has some great publications and a resources on cryogenic properties of common materials. Solids are accessible on the website, and liquids/gases can be accessed through the RefProp software package, which is similar to CoolProp.\n\n\nCode\n#Load all of the libraries\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom scipy.integrate import quad"
   },
   {
-    "objectID": "index.html#featured-projects",
-    "href": "index.html#featured-projects",
-    "title": "Engineering Projects",
-    "section": "Featured Projects",
-    "text": "Featured Projects\n\nBBQ Controller\nAn attempt to automate a charcoal bbq in the era where low-cost controllers were coming online.\nExplore BBQ Controller"
-  },
-  {
-    "objectID": "index.html#swagelok-tubing",
-    "href": "index.html#swagelok-tubing",
-    "title": "Engineering Projects",
-    "section": "Swagelok Tubing",
-    "text": "Swagelok Tubing\nComing soon."
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html#under-construction---adding-a-more-useful-heat-transfer-calculator",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html#under-construction---adding-a-more-useful-heat-transfer-calculator",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
     "section": "",
-    "text": "Wouldn’t you like to know!"
+    "text": "This notebook shows common dimensions of SS Swagelok tubing and estimates steady-state heat conducted down the length of a 316 stainless steel tube, from a warm end to a cold end. Often times in cryogenic gas systems, SS tubing is used to traverse a cryostat from room temperature down to cryogenic temperatures. Estimating the heat load can be useful to figure out if you need more tubing length or a smaller diameter to reduce heat loads on the cryostat.\nHere we use the NIST cryogenic thermal-conductivity curve fit for Type 316 stainless steel:\n\nTemperature (T): kelvin (K)\nThermal conductivity (k(T)): W/(m·K)\nNIST measured-data range: 4–300 K\n\nNIST source: Material Properties: 316 Stainless Steel\nPhysical model: one-dimensional, steady-state axial conduction through the metal annular cross-section of a straight tube. The two ends are held at specified temperatures. The model assumes no heat exchange with the surroundings along the tube, no parallel heat paths through fittings/supports, and constant tube dimensions.\nThis is different from radial heat transfer through the tube wall. Here, the heat flows parallel to the tube axis.\nNIST has some great publications and a resources on cryogenic properties of common materials. Solids are accessible on the website, and liquids/gases can be accessed through the RefProp software package, which is similar to CoolProp.\n\n\nCode\n#Load all of the libraries\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom scipy.integrate import quad"
+  },
+  {
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html#tubing-data",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html#tubing-data",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
+    "section": "Tubing Data",
+    "text": "Tubing Data\nOften times, when designing or operating low volume gas handling systems, knowing the volume per unit length of tube can be useful. This section reads the tubing data for Swagelok 316SS tubing, adds tubing volume (cc) per inch length and inch length per unit volume (cc). Cacluating volume (cc) per inch length is as simple as multiplying the tube cross-section by the unit conversion.\n\\[Vol (cc)/Len (in) = \\frac{pi \\cdot (OD - 2*thk)^2}{4} \\cdot 2.54^3 \\rightarrow [in^2]\\cdot[cm^3/in^3] = [cm^3/in]\\]\n\n\nCode\nfrom fractions import Fraction\ntubes = pd.read_csv(\"SwagelokTubeSizes.csv\", comment=\"#\")\n#tubing volume per inch of length\n#tubing length per cc of volume\ntubes[\"vol_len\"] = np.pi/4*(tubes.Tube_OD - 2*tubes.Wall)**2 * (2.54)**3\ntubes[\"len_vol\"] = 1/tubes.vol_len\ntubes.Tube_OD = tubes.Tube_OD.apply(lambda x: Fraction(x).limit_denominator(16))\nprint(\"Units: in, in, psig, cc/in, in/cc\")\ntubes.round(3)\n\n\nUnits: in, in, psig, cc/in, in/cc\n\n\n\n\n\n\n\n\n\nTube_OD\nWall\nPressure\nvol_len\nlen_vol\n\n\n\n\n0\n1/16\n0.010\n5,600\n0.023\n43.016\n\n\n1\n1/16\n0.012\n6,800\n0.019\n52.419\n\n\n2\n1/16\n0.014\n8,100\n0.015\n65.279\n\n\n3\n1/16\n0.016\n9,400\n0.012\n83.524\n\n\n4\n1/16\n0.020\n12,000\n0.007\n153.477\n\n\n5\n1/8\n0.028\n8,500\n0.061\n16.320\n\n\n6\n1/8\n0.035\n10,900\n0.039\n25.685\n\n\n7\n3/16\n0.028\n5,400\n0.223\n4.493\n\n\n8\n3/16\n0.035\n7,000\n0.178\n5.628\n\n\n9\n3/16\n0.049\n10,200\n0.103\n9.700\n\n\n10\n1/4\n0.028\n4,000\n0.484\n2.064\n\n\n11\n1/4\n0.035\n5,100\n0.417\n2.398\n\n\n12\n1/4\n0.049\n7,500\n0.297\n3.363\n\n\n13\n1/4\n0.065\n10,200\n0.185\n5.396\n\n\n14\n5/16\n0.035\n4,000\n0.757\n1.321\n\n\n15\n5/16\n0.049\n5,800\n0.592\n1.689\n\n\n16\n5/16\n0.065\n8,000\n0.429\n2.333\n\n\n17\n3/8\n0.035\n3,300\n1.197\n0.835\n\n\n18\n3/8\n0.049\n4,800\n0.988\n1.013\n\n\n19\n3/8\n0.065\n6,500\n0.773\n1.294\n\n\n20\n3/8\n0.083\n7,500\n0.562\n1.779\n\n\n21\n1/2\n0.035\n2,600\n2.380\n0.420\n\n\n22\n1/2\n0.049\n3,700\n2.080\n0.481\n\n\n23\n1/2\n0.065\n5,100\n1.762\n0.568\n\n\n24\n1/2\n0.083\n6,700\n1.436\n0.696\n\n\n25\n5/8\n0.049\n2,900\n3.574\n0.280\n\n\n26\n5/8\n0.065\n4,000\n3.154\n0.317\n\n\n27\n5/8\n0.083\n5,200\n2.712\n0.369\n\n\n28\n5/8\n0.095\n6,000\n2.435\n0.411\n\n\n29\n3/4\n0.049\n2,400\n5.471\n0.183\n\n\n30\n3/4\n0.065\n3,300\n4.947\n0.202\n\n\n31\n3/4\n0.083\n4,200\n4.390\n0.228\n\n\n32\n3/4\n0.095\n4,900\n4.036\n0.248\n\n\n33\n3/4\n0.109\n5,800\n3.643\n0.275"
+  },
+  {
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html#nist-thermal-conductivity-correlation",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html#nist-thermal-conductivity-correlation",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
+    "section": "1. NIST thermal-conductivity correlation",
+    "text": "1. NIST thermal-conductivity correlation\nThe curve fit is expressed as:\n\\(log_{10}(k)=a+bX+cX^2+dX^3+eX^4+fX^5+gX^6+hX^7+iX^8\\)\nwhere \\((X=log_{10}(T))\\), with (\\(T\\)) in kelvin and (\\(K\\)) in \\(W/(m·K)\\).\nThe coefficients below are transcribed from the NIST 316 stainless steel curve fit. Use the correlation within the NIST measured-data range of 4–300 K for engineering calculations.\n\n\nCode\n# NIST Type 316 stainless steel thermal conductivity coefficients\nNIST_K_COEFFS = {\n    \"a\": -1.4087,\n    \"b\":  1.3982,\n    \"c\":  0.2543,\n    \"d\": -0.6260,\n    \"e\":  0.2334,\n    \"f\":  0.4256,\n    \"g\": -0.4658,\n    \"h\":  0.1650,\n    \"i\": -0.0199,\n}\n\nT_MIN_K = 4.0\nT_MAX_K = 300.0\n\ndef k_316ss(T_K):\n    \"\"\"NIST 316SS thermal conductivity in W/(m K), valid for 4 &lt;= T &lt;= 300 K.\"\"\"\n    T = np.asarray(T_K, dtype=float)\n    if np.any(~np.isfinite(T)) or np.any(T &lt; T_MIN_K) or np.any(T &gt; T_MAX_K):\n        raise ValueError(f\"Temperature must be between {T_MIN_K:g} and {T_MAX_K:g} K.\")\n    x = np.log10(T)\n    c = NIST_K_COEFFS\n    log10_k = (c[\"a\"] + c[\"b\"]*x + c[\"c\"]*x**2 + c[\"d\"]*x**3\n               + c[\"e\"]*x**4 + c[\"f\"]*x**5 + c[\"g\"]*x**6\n               + c[\"h\"]*x**7 + c[\"i\"]*x**8)\n    result = 10**log10_k\n    return float(result) if result.ndim == 0 else result"
+  },
+  {
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html#plot-thermal-conductivity-versus-temperature",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html#plot-thermal-conductivity-versus-temperature",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
+    "section": "2. Plot thermal conductivity versus temperature",
+    "text": "2. Plot thermal conductivity versus temperature\n\n\nCode\nT_plot = np.linspace(T_MIN_K, T_MAX_K, 500)\nplt.figure(figsize=(8, 5))\nplt.plot(T_plot, k_316ss(T_plot))\nplt.xlabel(\"Temperature (K)\")\nplt.ylabel(\"Thermal conductivity, k (W/m·K)\")\nplt.title(\"316 stainless steel — cryogenic thermal conductivity\")\nplt.grid(True)\nplt.tight_layout()\nplt.show()"
+  },
+  {
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html#tube-geometry-and-end-temperatures",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html#tube-geometry-and-end-temperatures",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
+    "section": "3. Tube geometry and end temperatures",
+    "text": "3. Tube geometry and end temperatures\nEdit the inputs below.\n\ntube_od_in: tube outside diameter, inches\nwall_thickness_in: wall thickness, inches\ntube_length_m: axial length between the warm and cold ends, metres\nT_warm_K, T_cold_K: temperatures at the two ends, kelvin\n\nThe metal cross-sectional area conducting heat axially is the annular area:\n\\(A_m=\\frac{\\pi}{4}(D_o^2-D_i^2)\\)\nwhere \\((D_i=D_o-2t)\\). This is not the fluid-flow area inside the tube.\n\n\nCode\n# -------- USER INPUTS: EDIT THESE VALUES --------\ntube_od_in = 0.1250           # tube outside diameter, inches\nwall_thickness_in = 0.028    # wall thickness, inches\ntube_length_m = 0.5          # axial distance between warm and cold ends, metres\nT_warm_K = 293.0             # warm-end temperature, kelvin\nT_cold_K = 38.0              # cold-end temperature, kelvin\n# ------------------------------------------------\n\nIN_TO_M = 0.0254\n\nif tube_od_in &lt;= 0 or wall_thickness_in &lt;= 0:\n    raise ValueError(\"OD and wall thickness must be positive.\")\nif 2 * wall_thickness_in &gt;= tube_od_in:\n    raise ValueError(\"Wall thickness leaves no positive internal diameter.\")\nif tube_length_m &lt;= 0:\n    raise ValueError(\"Tube length must be positive.\")\nif T_warm_K == T_cold_K:\n    raise ValueError(\"Warm- and cold-end temperatures must differ.\")\nif not (T_MIN_K &lt;= T_warm_K &lt;= T_MAX_K and T_MIN_K &lt;= T_cold_K &lt;= T_MAX_K):\n    raise ValueError(\"Both end temperatures must be within the NIST 4–300 K data range.\")\n\ntube_id_in = tube_od_in - 2*wall_thickness_in\nDo_m = tube_od_in * IN_TO_M\nDi_m = tube_id_in * IN_TO_M\nmetal_area_m2 = np.pi/4 * (Do_m**2 - Di_m**2)\n\nprint(f\"Tube OD: {tube_od_in:.4f} in\")\nprint(f\"Tube ID: {tube_id_in:.4f} in\")\nprint(f\"Metal cross-sectional area: {metal_area_m2:.6e} m²\")\nprint(f\"Axial length: {tube_length_m:.4g} m\")\nprint(f\"End temperatures: {T_warm_K:.2f} K and {T_cold_K:.2f} K\")\n\n\nTube OD: 0.1250 in\nTube ID: 0.0690 in\nMetal cross-sectional area: 5.504870e-06 m²\nAxial length: 0.5 m\nEnd temperatures: 293.00 K and 38.00 K"
+  },
+  {
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html#axial-heat-conduction-calculation",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html#axial-heat-conduction-calculation",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
+    "section": "4. Axial heat conduction calculation",
+    "text": "4. Axial heat conduction calculation\nFor a straight tube with constant metal cross-sectional area and temperature-dependent conductivity:\n\\(\\dot Q=\\frac{A_m}{L}\\int_{T_c}^{T_h} k(T)\\,dT\\)\nwhere:\n\n\\((\\dot Q)\\) = steady-state axial heat-transfer rate [W]\n\\((A_m)\\) = metal annular cross-sectional area [m²]\n\\((L)\\) = axial tube length between the two temperature boundaries [m]\n\\((k(T))\\) = thermal conductivity [W/(m·K)]\n\\((T_h,T_c)\\) = warm- and cold-end temperatures [K]\n\nThe integral is evaluated numerically. The reported heat leak is a positive magnitude, flowing from the warm end toward the cold end.\n\n\nCode\nT_low = min(T_warm_K, T_cold_K)\nT_high = max(T_warm_K, T_cold_K)\n\nintegral_k_dT, integration_error = quad(\n    lambda T: k_316ss(T),\n    T_low,\n    T_high,\n    epsabs=1e-9,\n    epsrel=1e-8,\n)\n\nQdot_W = (metal_area_m2 / tube_length_m) * integral_k_dT\n\naxial_results = pd.DataFrame({\n    \"Quantity\": [\n        \"Metal cross-sectional area\",\n        \"Integrated conductivity, ∫k(T)dT\",\n        \"Axial heat leak for entered tube length\",\n        \"Axial heat leak per meter of tube\",\n        \"Numerical integration error estimate\",\n    ],\n    \"Value\": [\n        metal_area_m2,\n        integral_k_dT,\n        Qdot_W,\n        Qdot_W / tube_length_m,\n        integration_error,\n    ],\n    \"Units\": [\n        \"m²\",\n        \"W/m\",\n        \"W\",\n        \"W/m²\",\n        \"W/m\",\n    ],\n})\naxial_results\n\n\n\n\n\n\n\n\n\nQuantity\nValue\nUnits\n\n\n\n\n0\nMetal cross-sectional area\n5.504870e-06\nm²\n\n\n1\nIntegrated conductivity, ∫k(T)dT\n2.845715e+03\nW/m\n\n\n2\nAxial heat leak for entered tube length\n3.133059e-02\nW\n\n\n3\nAxial heat leak per meter of tube\n6.266117e-02\nW/m²\n\n\n4\nNumerical integration error estimate\n8.754762e-08\nW/m"
+  },
+  {
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html#axial-temperature-profile",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html#axial-temperature-profile",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
+    "section": "5. Axial temperature profile",
+    "text": "5. Axial temperature profile\nFor steady axial conduction with no heat entering or leaving the tube along its length, the heat rate is constant. The temperature profile is generally nonlinear because (k) changes with temperature.\nThe profile below is calculated by inverting the cumulative integral of (k(T)).\n\n\nCode\nn_points = 200\nx_m = np.linspace(0, tube_length_m, n_points)\n\n# Cumulative integral of k(T) from the cold-end temperature to each temperature.\nT_dense = np.linspace(T_low, T_high, 5000)\nk_dense = k_316ss(T_dense)\ncum_k = np.concatenate([[0.0], np.cumsum(0.5 * (k_dense[1:] + k_dense[:-1]) * np.diff(T_dense))])\n\n# The cumulative integral fraction varies linearly with axial position.\nposition_fraction = x_m / tube_length_m\nif T_cold_K &lt; T_warm_K:\n    target_integral = position_fraction * cum_k[-1]\n    T_profile = np.interp(target_integral, cum_k, T_dense)\nelse:\n    target_integral = (1 - position_fraction) * cum_k[-1]\n    T_profile = np.interp(target_integral, cum_k, T_dense)\n\nplt.figure(figsize=(8, 5))\nplt.plot(x_m, T_profile)\nplt.xlabel(\"Distance from cold end (m)\")\nplt.ylabel(\"Temperature (K)\")\nplt.title(\"Steady-state axial temperature profile along 316SS tube\")\nplt.grid(True)\nplt.tight_layout()\nplt.show()"
+  },
+  {
+    "objectID": "Swagelok_Tubing/Swagelok_Tubing.html#important-assumptions-and-limitations",
+    "href": "Swagelok_Tubing/Swagelok_Tubing.html#important-assumptions-and-limitations",
+    "title": "Swagelok SS316 Tubing - Some Useful Data",
+    "section": "6. Important assumptions and limitations",
+    "text": "6. Important assumptions and limitations\n\nAxial conduction only: This estimates heat conducted through the tube metal along its length. It does not calculate radial conduction through the wall.\nNo distributed heat exchange: The tube is assumed thermally isolated along its length. If the tube is exposed to ambient air, radiation, insulation, or intermediate thermal anchors, the temperature profile and heat leak will change.\nEnd temperatures: The inputs are metal temperatures at the two ends, not necessarily fluid temperatures. Fluid-to-wall convection or boiling resistance is outside this model.\nParallel paths: Fittings, valves, weldments, supports, braids, and other connected metal paths are excluded.\nGeometry: Nominal dimensions and constant cross-sectional area are assumed. Thermal contraction is neglected.\nMaterial properties: The correlation is for reference Type 316 stainless steel. Actual properties can vary with composition, processing, and cold work.\nProperty range: The notebook restricts temperatures to the NIST 4–300 K measured-data range.\n\nFor a long tube exposed to ambient surroundings or with intermediate thermal intercepts, a segmented model with distributed heat input/removal is more appropriate.\nMost of this coding an data scraping was performed by chatGPT"
   },
   {
     "objectID": "BBQ/BBQ_Setup.html",
@@ -54,5 +89,26 @@
     "title": "Charcoal BBQ Controller",
     "section": "BBQ In Action!",
     "text": "BBQ In Action!\nThe image below shows the BBQ output and stability. The setpoint for the first portion of the cook was 225F and then it was increased to 300F after 9.75 hours. The black data is the grill temperature, the blue is the food probe, and the red is the fan percentage of power. The fan power is shifted on the plot to be between 100 and 200.\nIt took a couple of runs to get the PID parameters tuned, but ulitimately was quite stable meaning I no longer had to baby-sit the bbq for long cooks.\n\nIn the data above I am using pulse width modulated motor control for the fan, but ran into issues with the facn being oversized and for many runs the PWM signal was so small that the fan wouldn’t even spin up. To overcome this, I switched to ON/OFF control with an integration window. I implemented this by converting the PWM signal to a fan run time signal in a 5 or 10 second window. So a 10% PWM signal in a 10 second window means the fan would turn on for 1 second and turn off for the remaining 9 seconds. This worked very well, but ultimately killed the fan because of the constant inrush current needed to start the fan every 5-10 seconds.\nWhile hunting for a smaller fan a few years later I noticed the SMOBOT controller. From a longevity perspective this is much better design than the active fan control I had implemented. This new controller also allowed for remote internet connections so I could get feedback from the BBQ while away from the house. This SMOBOT controller has worked so well over the last 7 years that I finally disassembled the Arduino model I made."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "Wouldn’t you like to know!"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Engineering Projects",
+    "section": "",
+    "text": "This website is a collection of engineering projects, home projects, calculations, and analysis. I would like to build out a site where I can access common technical knowledge. In my line of work, diverse technical projects tend to be lumped into handfuls of months or years as projects shift around. Recently I find myself digging up project work from 5-10 years prior, and trying to remember why we made the decisiosn at the time.\nTimes are changing and AI tools will soon (can already) do everything I intend to document on this site, but it will be nice to have a fixed set of data analyzed and verified that I can come back to wihtout wondering whether or not AI crapped itself or picked a random number in the middle of an analysis, which is still common. AI can do a lot of things extremely well where accuracy is not important, but for experimental sciences this couldn’t be further from the truth. That being said, I use AI for a lot of tasking now. No more looking at help files, no more coding from scratch, CAD and CNC programming are next on the list to get overtaken by AI efficiency. As scary as AI can be portrayed, I’m actually excited to have it take over all of the low-level operations of day to day technical/engineering work. The real challenge down the road will be how people can mentally manage all of the additional work and diversity of knowledge that AI will enable."
+  },
+  {
+    "objectID": "index.html#featured-projects",
+    "href": "index.html#featured-projects",
+    "title": "Engineering Projects",
+    "section": "Featured Projects",
+    "text": "Featured Projects\n\nSwagelok Tubing\nSome useful data for Swagelok SS316 tubing in cryogenic gas handling systems.\nSwagelok Tubing Calcs\n\n\nBBQ Controller\nAn attempt to automate a charcoal bbq in the era where low-cost controllers were coming online.\nExplore BBQ Controller"
   }
 ]
