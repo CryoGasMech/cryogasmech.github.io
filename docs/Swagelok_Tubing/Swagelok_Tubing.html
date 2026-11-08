@@ -225,7 +225,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="under-construction---adding-a-more-useful-heat-transfer-calculator">UNDER CONSTRUCTION - ADDING A MORE USEFUL HEAT TRANSFER CALCULATOR</h2>
 <p>This notebook shows common dimensions of SS Swagelok tubing and estimates steady-state heat conducted down the length of a 316 stainless steel tube, from a warm end to a cold end. Often times in cryogenic gas systems, SS tubing is used to traverse a cryostat from room temperature down to cryogenic temperatures. Estimating the heat load can be useful to figure out if you need more tubing length or a smaller diameter to reduce heat loads on the cryostat, or if you need more tubing volume you can figure out how much additional heat load you might apply to the cryostat.</p>
 <p>Here we use the NIST cryogenic thermal-conductivity curve fit for the specific metal. <a href="https://trc.nist.gov/cryogenics/index.html"><strong>NIST</strong></a> has some great publications and a resources on cryogenic properties of common materials. Solids are accessible on the website, and liquids/gases can be accessed through the RefProp software package, which is similar to <a href="https://coolprop.org/"><strong>CoolProp</strong></a>.</p>
-<div id="169cc25b-fc60-442c-831d-3f6afa66bdc3" class="cell" data-execution_count="31">
+<div id="169cc25b-fc60-442c-831d-3f6afa66bdc3" class="cell" data-execution_count="51">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Load all of the libraries</span></span>
@@ -240,7 +240,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="tubing-geometric-data">Tubing Geometric Data</h2>
 <p>Often times, when designing or operating low volume gas handling systems, knowing the volume per unit length of tube can be useful. This section reads the tubing data for Swagelok 316SS tubing (<a href="https://www.swagelok.com/downloads/webcatalogs/en/ms-01-107.pdf">Tabel 3 - Fractional Stainless Steel Seamless Tubing</a>), adds tubing volume (cc) per inch length and inch length per unit volume (cc). Calcuating volume (cc) per inch length is as simple as multiplying the tube cross-section by the unit conversion cubed.<br>
 <span class="math display">\[\frac{Vol [cc]}{Len [in]} = \frac{\pi \cdot (OD[in] - 2*thk[in])^2}{4} \cdot (2.54\frac{[cm]}{[in]})^3\]</span></p>
-<div id="cc86c2a9-fee6-4d82-b0db-898670bc0a1a" class="cell" data-execution_count="32">
+<div id="cc86c2a9-fee6-4d82-b0db-898670bc0a1a" class="cell" data-execution_count="52">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fractions <span class="im">import</span> Fraction</span>
@@ -252,7 +252,7 @@ window.Quarto = {
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>tubes[(<span class="st">"Tube_OD"</span>,<span class="st">"in"</span>)] <span class="op">=</span> tubes[(<span class="st">"Tube_OD"</span>,<span class="st">"in"</span>)].<span class="bu">apply</span>(<span class="kw">lambda</span> x: Fraction(x).limit_denominator(<span class="dv">16</span>))</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>tubes.<span class="bu">round</span>(<span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="32">
+<div class="cell-output cell-output-display" data-execution_count="52">
 <div>
 
 
@@ -563,7 +563,7 @@ window.Quarto = {
 <p><span class="math inline">\(log_{10}(k)=a+bX+cX^2+dX^3+eX^4+fX^5+gX^6+hX^7+iX^8\)</span></p>
 <p>where <span class="math inline">\((X=log_{10}(T))\)</span>, with (<span class="math inline">\(T\)</span>) in kelvin and (<span class="math inline">\(K\)</span>) in <span class="math inline">\(W/(m·K)\)</span>.</p>
 <p>The coefficients below are transcribed from the NIST 316 stainless steel curve fit. Use the correlation within the NIST measured-data range of 4–300 K for engineering calculations.</p>
-<div id="49726b5d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:470,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="33">
+<div id="49726b5d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:470,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="53">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># NIST Type 316 stainless steel thermal conductivity coefficients</span></span>
@@ -599,7 +599,7 @@ window.Quarto = {
 </section>
 <section id="plot-thermal-conductivity-versus-temperature" class="level2">
 <h2 class="anchored" data-anchor-id="plot-thermal-conductivity-versus-temperature">2. Plot thermal conductivity versus temperature</h2>
-<div id="31ba580a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="34">
+<div id="31ba580a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="54">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>T_plot <span class="op">=</span> np.linspace(T_MIN_K, T_MAX_K, <span class="dv">500</span>)</span>
@@ -634,7 +634,7 @@ window.Quarto = {
 <p>The metal cross-sectional area conducting heat axially is the annular area:</p>
 <p><span class="math inline">\(A_m=\frac{\pi}{4}(D_o^2-D_i^2)\)</span></p>
 <p>where <span class="math inline">\((D_i=D_o-2t)\)</span>. This is <strong>not</strong> the fluid-flow area inside the tube.</p>
-<div id="fc33fce4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="38">
+<div id="fc33fce4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="55">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># -------- USER INPUTS: EDIT THESE VALUES --------</span></span>
@@ -691,7 +691,7 @@ End temperatures: 38.00 K and 4.00 K</code></pre>
 <li><span class="math inline">\((T_h,T_c)\)</span> = warm- and cold-end temperatures [K]</li>
 </ul>
 <p>The integral is evaluated numerically. The reported heat leak is a positive magnitude, flowing from the warm end toward the cold end.</p>
-<div id="c80afeb8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:903,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="39">
+<div id="c80afeb8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:903,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="56">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>T_low <span class="op">=</span> <span class="bu">min</span>(T_warm_K, T_cold_K)</span>
@@ -732,7 +732,7 @@ End temperatures: 38.00 K and 4.00 K</code></pre>
 <span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>})</span>
 <span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>axial_results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="39">
+<div class="cell-output cell-output-display" data-execution_count="56">
 <div>
 
 
@@ -787,7 +787,7 @@ End temperatures: 38.00 K and 4.00 K</code></pre>
 <h2 class="anchored" data-anchor-id="axial-temperature-profile">5. Axial temperature profile</h2>
 <p>For steady axial conduction with no heat entering or leaving the tube along its length, the heat rate is constant. The temperature profile is generally nonlinear because (k) changes with temperature.</p>
 <p>The profile below is calculated by inverting the cumulative integral of (k(T)).</p>
-<div id="ae92db4c" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730.000244140625,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="40">
+<div id="ae92db4c" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730.000244140625,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="57">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>n_points <span class="op">=</span> <span class="dv">200</span></span>
@@ -842,7 +842,7 @@ End temperatures: 38.00 K and 4.00 K</code></pre>
 <section id="working-section" class="level2">
 <h2 class="anchored" data-anchor-id="working-section">7. Working Section</h2>
 <p>Some correlations might be wrong, and additional materials need to be added.</p>
-<div id="3724bb05-95fa-4b81-99ec-d6bba8c6df56" class="cell" data-execution_count="43">
+<div id="3724bb05-95fa-4b81-99ec-d6bba8c6df56" class="cell" data-execution_count="58">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Updated multilevel dictionary directly from NIST Cryogenics</span></span>
@@ -917,7 +917,7 @@ End temperatures: 38.00 K and 4.00 K</code></pre>
 <span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>df_cryo</span>
 <span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="43">
+<div class="cell-output cell-output-display" data-execution_count="58">
 <div>
 
 
@@ -1113,7 +1113,7 @@ End temperatures: 38.00 K and 4.00 K</code></pre>
 </div>
 </div>
 </div>
-<div id="880218bf-db38-48a6-a338-f4aa9b3ab20b" class="cell" data-execution_count="50">
+<div id="880218bf-db38-48a6-a338-f4aa9b3ab20b" class="cell" data-execution_count="59">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
