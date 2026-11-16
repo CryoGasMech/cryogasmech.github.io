@@ -160,7 +160,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#nist-cryogenic-material-properties-modules" id="toc-nist-cryogenic-material-properties-modules" class="nav-link" data-scroll-target="#nist-cryogenic-material-properties-modules">1. NIST Cryogenic Material Properties Modules</a></li>
   <li><a href="#core-mechanics-engine-shigley-frustum-approach" id="toc-core-mechanics-engine-shigley-frustum-approach" class="nav-link" data-scroll-target="#core-mechanics-engine-shigley-frustum-approach">2. Core Mechanics Engine (Shigley Frustum Approach)</a></li>
   <li><a href="#core-thermal-solver-loop" id="toc-core-thermal-solver-loop" class="nav-link" data-scroll-target="#core-thermal-solver-loop">3. Core Thermal Solver Loop</a></li>
-  <li><a href="#execution-block-standard-static-matplotlib-plotter" id="toc-execution-block-standard-static-matplotlib-plotter" class="nav-link" data-scroll-target="#execution-block-standard-static-matplotlib-plotter">4. Execution Block &amp; Standard Static Matplotlib Plotter</a></li>
+  <li><a href="#execution-block-standard-static-matplotlib-plotter" id="toc-execution-block-standard-static-matplotlib-plotter" class="nav-link" data-scroll-target="#execution-block-standard-static-matplotlib-plotter">4. Execution Block &amp; Standard Static Matplotlib Plotter</a>
+  <ul class="collapse">
+  <li><a href="#ss316-bolt---ss316-washer" id="toc-ss316-bolt---ss316-washer" class="nav-link" data-scroll-target="#ss316-bolt---ss316-washer">4.1 SS316 Bolt - SS316 Washer</a></li>
+  <li><a href="#ss316-bolt---molybdenum-washer" id="toc-ss316-bolt---molybdenum-washer" class="nav-link" data-scroll-target="#ss316-bolt---molybdenum-washer">4.2 SS316 Bolt - Molybdenum Washer</a></li>
+  <li><a href="#brass-bolt---ss316-washer" id="toc-brass-bolt---ss316-washer" class="nav-link" data-scroll-target="#brass-bolt---ss316-washer">4.3 Brass Bolt - SS316 Washer</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -190,278 +195,262 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="needs-verification" class="level1">
 <h1>— NEEDS VERIFICATION! —</h1>
 <p>This notebook models temperature-dependent joint dynamics from 293.15 K down to 4 K. Adjust the geometry dictionary settings and re-run to analyze.</p>
-<div id="4e9fcb5a-f651-4e43-a7f2-e0e272d3fd52" class="cell" data-execution_count="1">
+<div id="4e9fcb5a-f651-4e43-a7f2-e0e272d3fd52" class="cell" data-execution_count="15">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> quad</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> quad</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Modify path to find materials directory if it's not in the path already</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust '..' if your notebook is nested deeper (e.g., '../../')</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>project_root <span class="op">=</span> os.path.abspath(<span class="st">".."</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> project_root <span class="kw">not</span> <span class="kw">in</span> sys.path:</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    sys.path.append(project_root)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># import the cryogenic materials database</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> materials <span class="im">import</span> DATABASE</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(DATABASE.keys())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
+<div class="cell-output cell-output-stdout">
+<pre><code>dict_keys(['Brass', 'SS 316', 'Copper-RRR50', 'Copper-RRR100', 'Al 6061-T6', 'Al 1100', 'Al 3003', 'Molybdenum', 'Ti-6Al-4V', 'Ti_15-3-3-3', 'Invar', 'Teflon'])</code></pre>
+</div>
 </div>
 <section id="nist-cryogenic-material-properties-modules" class="level2">
 <h2 class="anchored" data-anchor-id="nist-cryogenic-material-properties-modules">1. NIST Cryogenic Material Properties Modules</h2>
-<div id="6e60d3d4-8f82-4eb9-b9c4-edee852275c5" class="cell" data-execution_count="2">
+<p>Load cryogenic materials database and map names in this notebook to the database names.</p>
+<div id="6e60d3d4-8f82-4eb9-b9c4-edee852275c5" class="cell" data-execution_count="16">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_nist_copper_alpha(T):</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Exact NIST log-log polynomial for C10100 / OFHC Copper CTE (1/K)."""</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    T <span class="op">=</span> <span class="bu">max</span>(T, <span class="fl">4.0</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    a, b, c, d <span class="op">=</span> <span class="op">-</span><span class="fl">17.9081289</span>, <span class="fl">67.131914</span>, <span class="op">-</span><span class="fl">118.809316</span>, <span class="fl">109.9845997</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    e, f, g <span class="op">=</span> <span class="op">-</span><span class="fl">53.8696089</span>, <span class="fl">13.30247491</span>, <span class="op">-</span><span class="fl">1.30843441</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    log10_T <span class="op">=</span> np.log10(T)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    log10_y <span class="op">=</span> (a <span class="op">+</span> b <span class="op">*</span> log10_T <span class="op">+</span> c <span class="op">*</span> log10_T<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> d <span class="op">*</span> log10_T<span class="op">**</span><span class="dv">3</span> <span class="op">+</span> </span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>               e <span class="op">*</span> log10_T<span class="op">**</span><span class="dv">4</span> <span class="op">+</span> f <span class="op">*</span> log10_T<span class="op">**</span><span class="dv">5</span> <span class="op">+</span> g <span class="op">*</span> log10_T<span class="op">**</span><span class="dv">6</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (<span class="dv">10</span><span class="op">**</span>log10_y) <span class="op">*</span> <span class="fl">1e-6</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_c10100_properties(T, T_ref<span class="op">=</span><span class="fl">293.15</span>):</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Returns E (Pa) and dL/L for C10100 Copper via NIST Monograph 177."""</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    E_GPa <span class="op">=</span> <span class="fl">137.0</span> <span class="op">-</span> <span class="fl">1.27e-4</span> <span class="op">*</span> (T<span class="op">**</span><span class="dv">2</span>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    dL_L, _ <span class="op">=</span> quad(get_nist_copper_alpha, T_ref, T)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> E_GPa <span class="op">*</span> <span class="fl">1e9</span>, dL_L</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_ss316_properties(T, T_ref<span class="op">=</span><span class="fl">293.15</span>):</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Returns E (Pa) and dL/L for SS316 via NIST Polynomials."""</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> T <span class="op">&gt;=</span> <span class="fl">23.0</span>:</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        le_105 <span class="op">=</span> <span class="op">-</span><span class="fl">2.9554e2</span> <span class="op">-</span> <span class="fl">3.9811e-1</span> <span class="op">*</span> T <span class="op">+</span> <span class="fl">9.2683e-3</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="fl">2.0261e-5</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">3</span> <span class="op">+</span> <span class="fl">1.7127e-8</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">4</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        le_105 <span class="op">=</span> <span class="op">-</span><span class="fl">300.04</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    dL_L <span class="op">=</span> le_105 <span class="op">*</span> <span class="fl">1e-5</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> T <span class="op">&gt;=</span> <span class="fl">48.0</span>:</span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        E_GPa <span class="op">=</span> <span class="fl">2.079488e2</span> <span class="op">+</span> <span class="fl">7.394241e-2</span> <span class="op">*</span> T <span class="op">-</span> <span class="fl">9.627200e-4</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> <span class="fl">2.845560e-6</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">3</span> <span class="op">-</span> <span class="fl">3.240800e-9</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">4</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>        E_GPa <span class="op">=</span> <span class="fl">2.084729e2</span> <span class="op">-</span> <span class="fl">1.358965e-1</span> <span class="op">*</span> T <span class="op">+</span> <span class="fl">8.368629e-3</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> <span class="fl">1.381700e-4</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">3</span> <span class="op">+</span> <span class="fl">6.831930e-7</span> <span class="op">*</span> T<span class="op">**</span><span class="dv">4</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> E_GPa <span class="op">*</span> <span class="fl">1e9</span>, dL_L</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_molybdenum_properties(T, T_ref<span class="op">=</span><span class="fl">293.15</span>):</span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Returns E (Pa) and dL/L for pure Molybdenum via NIST Polynomials."""</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    T <span class="op">=</span> <span class="bu">max</span>(T, <span class="fl">4.0</span>)</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    a, b, c, d, e <span class="op">=</span> <span class="op">-</span><span class="fl">90.912613</span>, <span class="op">-</span><span class="fl">0.127173</span>, <span class="fl">0.00266801</span>, <span class="op">-</span><span class="fl">5.0432E-06</span>, <span class="fl">3.5183E-09</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    dL_L_105 <span class="op">=</span> a <span class="op">+</span> b<span class="op">*</span>T <span class="op">+</span> c<span class="op">*</span>(T<span class="op">**</span><span class="dv">2</span>) <span class="op">+</span> d<span class="op">*</span>(T<span class="op">**</span><span class="dv">3</span>) <span class="op">+</span> e<span class="op">*</span>(T<span class="op">**</span><span class="dv">4</span>)</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    E_GPa <span class="op">=</span> <span class="fl">329.0</span> <span class="op">-</span> <span class="fl">0.038</span> <span class="op">*</span> (T <span class="op">-</span> <span class="fl">293.15</span>)</span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> E_GPa <span class="op">*</span> <span class="fl">1e9</span>, dL_L_105 <span class="op">*</span> <span class="fl">1e-5</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_material_properties(mat_name, T, T_ref<span class="op">=</span><span class="fl">293.15</span>):</span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Unified factory routing for properties extraction with clean tuple unpacking."""</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> mat_name.upper()</span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="kw">in</span> [<span class="st">'SS316'</span>, <span class="st">'STAINLESS'</span>, <span class="st">'BOLT'</span>]:</span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> get_ss316_properties(T, T_ref)</span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> name <span class="kw">in</span> [<span class="st">'C10100'</span>, <span class="st">'COPPER'</span>, <span class="st">'CU'</span>]:</span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> get_c10100_properties(T, T_ref)</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> name <span class="kw">in</span> [<span class="st">'MOLYBDENUM'</span>, <span class="st">'MOLY'</span>, <span class="st">'MO'</span>]:</span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> get_molybdenum_properties(T, T_ref)</span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"Unknown material name indicator: </span><span class="sc">{</span>mat_name<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_material_properties(mat_name, T, T_ref<span class="op">=</span><span class="fl">293.15</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Unified factory routing for properties extraction with clean tuple unpacking."""</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> mat_name.upper()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> name <span class="kw">in</span> [<span class="st">'SS316'</span>, <span class="st">'STAINLESS'</span>, <span class="st">'BOLT'</span>, <span class="st">'SS 316'</span>]:</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> DATABASE[<span class="st">"SS 316"</span>].elastic_modulus(T)<span class="op">*</span><span class="fl">1e9</span>, DATABASE[<span class="st">"SS 316"</span>].thermal_expansion_integral(T)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> name <span class="kw">in</span> [<span class="st">'C10100'</span>, <span class="st">'COPPER'</span>, <span class="st">'CU'</span>, <span class="st">'COPPER-RRR50'</span>]:</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> DATABASE[<span class="st">"Copper-RRR50"</span>].elastic_modulus(T)<span class="op">*</span><span class="fl">1e9</span>, DATABASE[<span class="st">"Copper-RRR50"</span>].thermal_expansion_integral(T)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> name <span class="kw">in</span> [<span class="st">'MOLYBDENUM'</span>, <span class="st">'MOLY'</span>, <span class="st">'MO'</span>]:</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> DATABASE[<span class="st">"Molybdenum"</span>].elastic_modulus(T)<span class="op">*</span><span class="fl">1e9</span>, DATABASE[<span class="st">"Molybdenum"</span>].thermal_expansion_integral(T)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> name <span class="kw">in</span> [<span class="st">'BRASS'</span>]:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> DATABASE[<span class="st">"Brass"</span>].elastic_modulus(T)<span class="op">*</span><span class="fl">1e9</span>, DATABASE[<span class="st">"Brass"</span>].thermal_expansion_integral(T)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"Unknown material name indicator: </span><span class="sc">{</span>mat_name<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
 <section id="core-mechanics-engine-shigley-frustum-approach" class="level2">
 <h2 class="anchored" data-anchor-id="core-mechanics-engine-shigley-frustum-approach">2. Core Mechanics Engine (Shigley Frustum Approach)</h2>
-<div id="1f2dbbde-8243-47ac-afb6-783cf6d50e03" class="cell" data-execution_count="3">
+<div id="1f2dbbde-8243-47ac-afb6-783cf6d50e03" class="cell" data-execution_count="17">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_frustum_stiffness(z1, z2, d_w, d_h, E, alpha_deg<span class="op">=</span><span class="fl">30.0</span>):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Computes stiffness for an isolated member frustum layer according to Shigley."""</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> np.isclose(z1, z2): <span class="cf">return</span> <span class="bu">float</span>(<span class="st">'inf'</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    alpha <span class="op">=</span> np.radians(alpha_deg)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    tan_a <span class="op">=</span> np.tan(alpha)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    num <span class="op">=</span> (<span class="dv">2</span> <span class="op">*</span> z2 <span class="op">*</span> tan_a <span class="op">+</span> d_w <span class="op">-</span> d_h) <span class="op">*</span> (<span class="dv">2</span> <span class="op">*</span> z1 <span class="op">*</span> tan_a <span class="op">+</span> d_w <span class="op">+</span> d_h)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    den <span class="op">=</span> (<span class="dv">2</span> <span class="op">*</span> z2 <span class="op">*</span> tan_a <span class="op">+</span> d_w <span class="op">+</span> d_h) <span class="op">*</span> (<span class="dv">2</span> <span class="op">*</span> z1 <span class="op">*</span> tan_a <span class="op">+</span> d_w <span class="op">-</span> d_h)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (np.pi <span class="op">*</span> E <span class="op">*</span> d_h <span class="op">*</span> tan_a) <span class="op">/</span> np.log(num <span class="op">/</span> den)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_grip_length(geom):</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Helper to find total physical clamp height based on joint type architecture."""</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> geom[<span class="st">'joint_type'</span>].lower() <span class="op">==</span> <span class="st">'blind'</span>:</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> geom[<span class="st">'t_w1'</span>] <span class="op">+</span> geom[<span class="st">'t_p1'</span>] <span class="op">+</span> (<span class="fl">0.5</span> <span class="op">*</span> geom[<span class="st">'L_eng'</span>])</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> geom[<span class="st">'t_w1'</span>] <span class="op">+</span> geom[<span class="st">'t_p1'</span>] <span class="op">+</span> geom[<span class="st">'t_p2'</span>] <span class="op">+</span> geom.get(<span class="st">'t_w2'</span>, <span class="fl">0.0</span>)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_member_stiffness(geom, T):</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Dispatches stiffness stack tracking based on specified structural boundaries."""</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    d_w, d_h <span class="op">=</span> geom[<span class="st">'d_w'</span>], geom[<span class="st">'d_h'</span>]</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    t_w1, t_p1 <span class="op">=</span> geom[<span class="st">'t_w1'</span>], geom[<span class="st">'t_p1'</span>]</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    E_w1, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w1'</span>], T)</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    E_p1, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p1'</span>], T)</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    E_p2, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p2'</span>], T)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    compliance <span class="op">=</span> <span class="fl">0.0</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- CONFIGURATION A: BLIND TAPPED HOLE ---</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> geom[<span class="st">'joint_type'</span>].lower() <span class="op">==</span> <span class="st">'blind'</span>:</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        t_p2_eff <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> geom[<span class="st">'L_eng'</span>]</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(<span class="dv">0</span>, t_w1, d_w, d_h, E_w1)</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w1, t_w1 <span class="op">+</span> t_p1, d_w, d_h, E_p1)</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w1 <span class="op">+</span> t_p1, t_w1 <span class="op">+</span> t_p1 <span class="op">+</span> t_p2_eff, d_w, d_h, E_p2)</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- CONFIGURATION B: THROUGH-BOLT &amp; NUT ---</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>        t_w2, t_p2 <span class="op">=</span> geom.get(<span class="st">'t_w2'</span>, <span class="fl">0.0</span>), geom[<span class="st">'t_p2'</span>]</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>        L_grip <span class="op">=</span> t_w1 <span class="op">+</span> t_p1 <span class="op">+</span> t_p2 <span class="op">+</span> t_w2</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>        midplane <span class="op">=</span> L_grip <span class="op">/</span> <span class="fl">2.0</span></span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>        E_w2, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w2'</span>], T)</span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Top-down slice profiles</span></span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>        w1_end <span class="op">=</span> <span class="bu">min</span>(t_w1, midplane)</span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(<span class="dv">0</span>, w1_end, d_w, d_h, E_w1)</span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> midplane <span class="op">&gt;</span> t_w1:</span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>            p1_end <span class="op">=</span> <span class="bu">min</span>(t_w1 <span class="op">+</span> t_p1, midplane)</span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>            compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w1, p1_end, d_w, d_h, E_p1)</span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Bottom-up slice profiles</span></span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>        w2_end <span class="op">=</span> <span class="bu">min</span>(t_w2, midplane)</span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(<span class="dv">0</span>, w2_end, d_w, d_h, E_w2)</span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> midplane <span class="op">&gt;</span> t_w2:</span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>            p2_end <span class="op">=</span> <span class="bu">min</span>(t_w2 <span class="op">+</span> t_p2, midplane)</span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>            compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w2, p2_end, d_w, d_h, E_p2)</span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Cross-midplane sliver check</span></span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> midplane <span class="op">&gt;</span> (t_w2 <span class="op">+</span> t_p2):</span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>            compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w2 <span class="op">+</span> t_p2, midplane, d_w, d_h, E_p1)</span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> midplane <span class="op">&gt;</span> (t_w1 <span class="op">+</span> t_p1):</span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>            compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w1 <span class="op">+</span> t_p1, midplane, d_w, d_h, E_p2)</span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fl">1.0</span> <span class="op">/</span> compliance</span>
-<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_bolt_stiffness(geom, T):</span>
-<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculates bolt tension stiffness matching the current configurations."""</span></span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>    E_bolt, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_bolt'</span>], T)</span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>    A_bolt <span class="op">=</span> np.pi <span class="op">*</span> (geom[<span class="st">'d_bolt'</span>]<span class="op">**</span><span class="dv">2</span>) <span class="op">/</span> <span class="fl">4.0</span></span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>    L_grip <span class="op">=</span> get_grip_length(geom)</span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (A_bolt <span class="op">*</span> E_bolt) <span class="op">/</span> L_grip</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_frustum_stiffness(z1, z2, d_w, d_h, E, alpha_deg<span class="op">=</span><span class="fl">30.0</span>):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Computes stiffness for an isolated member frustum layer according to Shigley."""</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> np.isclose(z1, z2): <span class="cf">return</span> <span class="bu">float</span>(<span class="st">'inf'</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    alpha <span class="op">=</span> np.radians(alpha_deg)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    tan_a <span class="op">=</span> np.tan(alpha)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    num <span class="op">=</span> (<span class="dv">2</span> <span class="op">*</span> z2 <span class="op">*</span> tan_a <span class="op">+</span> d_w <span class="op">-</span> d_h) <span class="op">*</span> (<span class="dv">2</span> <span class="op">*</span> z1 <span class="op">*</span> tan_a <span class="op">+</span> d_w <span class="op">+</span> d_h)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    den <span class="op">=</span> (<span class="dv">2</span> <span class="op">*</span> z2 <span class="op">*</span> tan_a <span class="op">+</span> d_w <span class="op">+</span> d_h) <span class="op">*</span> (<span class="dv">2</span> <span class="op">*</span> z1 <span class="op">*</span> tan_a <span class="op">+</span> d_w <span class="op">-</span> d_h)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (np.pi <span class="op">*</span> E <span class="op">*</span> d_h <span class="op">*</span> tan_a) <span class="op">/</span> np.log(num <span class="op">/</span> den)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_grip_length(geom):</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Helper to find total physical clamp height based on joint type architecture."""</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> geom[<span class="st">'joint_type'</span>].lower() <span class="op">==</span> <span class="st">'blind'</span>:</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> geom[<span class="st">'t_w1'</span>] <span class="op">+</span> geom[<span class="st">'t_p1'</span>] <span class="op">+</span> (<span class="fl">0.5</span> <span class="op">*</span> geom[<span class="st">'L_eng'</span>])</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> geom[<span class="st">'t_w1'</span>] <span class="op">+</span> geom[<span class="st">'t_p1'</span>] <span class="op">+</span> geom[<span class="st">'t_p2'</span>] <span class="op">+</span> geom.get(<span class="st">'t_w2'</span>, <span class="fl">0.0</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_member_stiffness(geom, T):</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Dispatches stiffness stack tracking based on specified structural boundaries."""</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    d_w, d_h <span class="op">=</span> geom[<span class="st">'d_w'</span>], geom[<span class="st">'d_h'</span>]</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    t_w1, t_p1 <span class="op">=</span> geom[<span class="st">'t_w1'</span>], geom[<span class="st">'t_p1'</span>]</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    E_w1, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w1'</span>], T)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    E_p1, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p1'</span>], T)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    E_p2, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p2'</span>], T)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    compliance <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- CONFIGURATION A: BLIND TAPPED HOLE ---</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> geom[<span class="st">'joint_type'</span>].lower() <span class="op">==</span> <span class="st">'blind'</span>:</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        t_p2_eff <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> geom[<span class="st">'L_eng'</span>]</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(<span class="dv">0</span>, t_w1, d_w, d_h, E_w1)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w1, t_w1 <span class="op">+</span> t_p1, d_w, d_h, E_p1)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w1 <span class="op">+</span> t_p1, t_w1 <span class="op">+</span> t_p1 <span class="op">+</span> t_p2_eff, d_w, d_h, E_p2)</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- CONFIGURATION B: THROUGH-BOLT &amp; NUT ---</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>        t_w2, t_p2 <span class="op">=</span> geom.get(<span class="st">'t_w2'</span>, <span class="fl">0.0</span>), geom[<span class="st">'t_p2'</span>]</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>        L_grip <span class="op">=</span> t_w1 <span class="op">+</span> t_p1 <span class="op">+</span> t_p2 <span class="op">+</span> t_w2</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>        midplane <span class="op">=</span> L_grip <span class="op">/</span> <span class="fl">2.0</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>        E_w2, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w2'</span>], T)</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Top-down slice profiles</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>        w1_end <span class="op">=</span> <span class="bu">min</span>(t_w1, midplane)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(<span class="dv">0</span>, w1_end, d_w, d_h, E_w1)</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> midplane <span class="op">&gt;</span> t_w1:</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>            p1_end <span class="op">=</span> <span class="bu">min</span>(t_w1 <span class="op">+</span> t_p1, midplane)</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>            compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w1, p1_end, d_w, d_h, E_p1)</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Bottom-up slice profiles</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>        w2_end <span class="op">=</span> <span class="bu">min</span>(t_w2, midplane)</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>        compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(<span class="dv">0</span>, w2_end, d_w, d_h, E_w2)</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> midplane <span class="op">&gt;</span> t_w2:</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>            p2_end <span class="op">=</span> <span class="bu">min</span>(t_w2 <span class="op">+</span> t_p2, midplane)</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>            compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w2, p2_end, d_w, d_h, E_p2)</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Cross-midplane sliver check</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> midplane <span class="op">&gt;</span> (t_w2 <span class="op">+</span> t_p2):</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>            compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w2 <span class="op">+</span> t_p2, midplane, d_w, d_h, E_p1)</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> midplane <span class="op">&gt;</span> (t_w1 <span class="op">+</span> t_p1):</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>            compliance <span class="op">+=</span> <span class="fl">1.0</span> <span class="op">/</span> calculate_frustum_stiffness(t_w1 <span class="op">+</span> t_p1, midplane, d_w, d_h, E_p2)</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="fl">1.0</span> <span class="op">/</span> compliance</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_bolt_stiffness(geom, T):</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Calculates bolt tension stiffness matching the current configurations."""</span></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    E_bolt, _ <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_bolt'</span>], T)</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>    A_bolt <span class="op">=</span> np.pi <span class="op">*</span> (geom[<span class="st">'d_bolt'</span>]<span class="op">**</span><span class="dv">2</span>) <span class="op">/</span> <span class="fl">4.0</span></span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>    L_grip <span class="op">=</span> get_grip_length(geom)</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (A_bolt <span class="op">*</span> E_bolt) <span class="op">/</span> L_grip</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
 <section id="core-thermal-solver-loop" class="level2">
 <h2 class="anchored" data-anchor-id="core-thermal-solver-loop">3. Core Thermal Solver Loop</h2>
-<div id="148fdc5c-a234-462f-af5c-3ffc958e6741" class="cell" data-execution_count="4">
+<div id="148fdc5c-a234-462f-af5c-3ffc958e6741" class="cell" data-execution_count="18">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> analyze_cryo_joint_universal(geom, F_preload, T_start<span class="op">=</span><span class="fl">293.15</span>, T_end<span class="op">=</span><span class="fl">4.0</span>, steps<span class="op">=</span><span class="dv">100</span>):</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    temperatures <span class="op">=</span> np.linspace(T_start, T_end, steps)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> {</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">'T'</span>: temperatures, <span class="st">'force'</span>: [], <span class="st">'k_b'</span>: [], <span class="st">'k_m'</span>: [],</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">'dL_members_total'</span>: [], <span class="st">'dL_bolt_total'</span>: []</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    L_grip_ref <span class="op">=</span> get_grip_length(geom)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    _, dL_b_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_bolt'</span>], T_start)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    _, dL_w1_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w1'</span>], T_start)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    _, dL_p1_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p1'</span>], T_start)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    _, dL_p2_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p2'</span>], T_start)</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Safe decoupled check to prevent referencing non-unpacked nested values</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> geom[<span class="st">'joint_type'</span>].lower() <span class="op">!=</span> <span class="st">'blind'</span>:</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        _, dL_w2_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w2'</span>], T_start)</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        dL_w2_ref <span class="op">=</span> <span class="fl">0.0</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> T <span class="kw">in</span> temperatures:</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        k_b <span class="op">=</span> get_bolt_stiffness(geom, T)</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        k_m <span class="op">=</span> get_member_stiffness(geom, T)</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>        _, dL_b <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_bolt'</span>], T)</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>        _, dL_w1 <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w1'</span>], T)</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        _, dL_p1 <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p1'</span>], T)</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        _, dL_p2 <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p2'</span>], T)</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>        dl_w1_val <span class="op">=</span> geom[<span class="st">'t_w1'</span>] <span class="op">*</span> (dL_w1 <span class="op">-</span> dL_w1_ref)</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>        dl_p1_val <span class="op">=</span> geom[<span class="st">'t_p1'</span>] <span class="op">*</span> (dL_p1 <span class="op">-</span> dL_p1_ref)</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> geom[<span class="st">'joint_type'</span>].lower() <span class="op">==</span> <span class="st">'blind'</span>:</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>            dl_p2_val <span class="op">=</span> (<span class="fl">0.5</span> <span class="op">*</span> geom[<span class="st">'L_eng'</span>]) <span class="op">*</span> (dL_p2 <span class="op">-</span> dL_p2_ref)</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>            dl_members_sum <span class="op">=</span> dl_w1_val <span class="op">+</span> dl_p1_val <span class="op">+</span> dl_p2_val</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>            _, dL_w2 <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w2'</span>], T)</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>            dl_p2_val <span class="op">=</span> geom[<span class="st">'t_p2'</span>] <span class="op">*</span> (dL_p2 <span class="op">-</span> dL_p2_ref)</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>            dl_w2_val <span class="op">=</span> geom[<span class="st">'t_w2'</span>] <span class="op">*</span> (dL_w2 <span class="op">-</span> dL_w2_ref)</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>            dl_members_sum <span class="op">=</span> dl_w1_val <span class="op">+</span> dl_p1_val <span class="op">+</span> dl_p2_val <span class="op">+</span> dl_w2_val</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>        dl_bolt_sum <span class="op">=</span> L_grip_ref <span class="op">*</span> (dL_b <span class="op">-</span> dL_b_ref)</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>        delta_F <span class="op">=</span> (k_b <span class="op">*</span> k_m <span class="op">/</span> (k_b <span class="op">+</span> k_m)) <span class="op">*</span> (dl_members_sum <span class="op">-</span> dl_bolt_sum)</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'force'</span>].append(F_preload <span class="op">+</span> delta_F)</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'k_b'</span>].append(k_b)</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'k_m'</span>].append(k_m)</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'dL_members_total'</span>].append(dl_members_sum)</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'dL_bolt_total'</span>].append(dl_bolt_sum)</span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> results.keys():</span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> k <span class="op">!=</span> <span class="st">'T'</span>: results[k] <span class="op">=</span> np.array(results[k])</span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> analyze_cryo_joint_universal(geom, F_preload, T_start<span class="op">=</span><span class="fl">293.15</span>, T_end<span class="op">=</span><span class="fl">4.0</span>, steps<span class="op">=</span><span class="dv">100</span>):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    temperatures <span class="op">=</span> np.linspace(T_start, T_end, steps)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> {</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">'T'</span>: temperatures, <span class="st">'force'</span>: [], <span class="st">'k_b'</span>: [], <span class="st">'k_m'</span>: [],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">'dL_members_total'</span>: [], <span class="st">'dL_bolt_total'</span>: []</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    L_grip_ref <span class="op">=</span> get_grip_length(geom)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    _, dL_b_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_bolt'</span>], T_start)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    _, dL_w1_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w1'</span>], T_start)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    _, dL_p1_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p1'</span>], T_start)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    _, dL_p2_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p2'</span>], T_start)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Safe decoupled check to prevent referencing non-unpacked nested values</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> geom[<span class="st">'joint_type'</span>].lower() <span class="op">!=</span> <span class="st">'blind'</span>:</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        _, dL_w2_ref <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w2'</span>], T_start)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        dL_w2_ref <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> T <span class="kw">in</span> temperatures:</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        k_b <span class="op">=</span> get_bolt_stiffness(geom, T)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        k_m <span class="op">=</span> get_member_stiffness(geom, T)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>        _, dL_b <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_bolt'</span>], T)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        _, dL_w1 <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w1'</span>], T)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        _, dL_p1 <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p1'</span>], T)</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        _, dL_p2 <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_p2'</span>], T)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>        dl_w1_val <span class="op">=</span> geom[<span class="st">'t_w1'</span>] <span class="op">*</span> (dL_w1 <span class="op">-</span> dL_w1_ref)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>        dl_p1_val <span class="op">=</span> geom[<span class="st">'t_p1'</span>] <span class="op">*</span> (dL_p1 <span class="op">-</span> dL_p1_ref)</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> geom[<span class="st">'joint_type'</span>].lower() <span class="op">==</span> <span class="st">'blind'</span>:</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>            dl_p2_val <span class="op">=</span> (<span class="fl">0.5</span> <span class="op">*</span> geom[<span class="st">'L_eng'</span>]) <span class="op">*</span> (dL_p2 <span class="op">-</span> dL_p2_ref)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>            dl_members_sum <span class="op">=</span> dl_w1_val <span class="op">+</span> dl_p1_val <span class="op">+</span> dl_p2_val</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>            _, dL_w2 <span class="op">=</span> get_material_properties(geom[<span class="st">'mat_w2'</span>], T)</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>            dl_p2_val <span class="op">=</span> geom[<span class="st">'t_p2'</span>] <span class="op">*</span> (dL_p2 <span class="op">-</span> dL_p2_ref)</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>            dl_w2_val <span class="op">=</span> geom[<span class="st">'t_w2'</span>] <span class="op">*</span> (dL_w2 <span class="op">-</span> dL_w2_ref)</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>            dl_members_sum <span class="op">=</span> dl_w1_val <span class="op">+</span> dl_p1_val <span class="op">+</span> dl_p2_val <span class="op">+</span> dl_w2_val</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>        dl_bolt_sum <span class="op">=</span> L_grip_ref <span class="op">*</span> (dL_b <span class="op">-</span> dL_b_ref)</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>        delta_F <span class="op">=</span> (k_b <span class="op">*</span> k_m <span class="op">/</span> (k_b <span class="op">+</span> k_m)) <span class="op">*</span> (dl_members_sum <span class="op">-</span> dl_bolt_sum)</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'force'</span>].append(F_preload <span class="op">+</span> delta_F)</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'k_b'</span>].append(k_b)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'k_m'</span>].append(k_m)</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'dL_members_total'</span>].append(dl_members_sum)</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>        results[<span class="st">'dL_bolt_total'</span>].append(dl_bolt_sum)</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> results.keys():</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> k <span class="op">!=</span> <span class="st">'T'</span>: results[k] <span class="op">=</span> np.array(results[k])</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
 <section id="execution-block-standard-static-matplotlib-plotter" class="level2">
 <h2 class="anchored" data-anchor-id="execution-block-standard-static-matplotlib-plotter">4. Execution Block &amp; Standard Static Matplotlib Plotter</h2>
-<div id="3fee4309-f8c3-4bb5-baf5-1c93d8f6b191" class="cell" data-execution_count="5">
+<section id="ss316-bolt---ss316-washer" class="level3">
+<h3 class="anchored" data-anchor-id="ss316-bolt---ss316-washer">4.1 SS316 Bolt - SS316 Washer</h3>
+<div id="3fee4309-f8c3-4bb5-baf5-1c93d8f6b191" class="cell" data-execution_count="19">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define configuration geometry variables using standard python entries</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>geometry <span class="op">=</span> {</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'joint_type'</span>: <span class="st">'through'</span>,    <span class="co"># &lt;-- CHANGE STRING HERE: 'through' or 'blind'</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'washer_mat'</span>: <span class="st">'SS316'</span>, <span class="co"># &lt;-- CHANGE STRING HERE: 'MOLYBDENUM' or 'SS316'</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'d_bolt'</span>: <span class="fl">0.00334</span>, <span class="st">'d_h'</span>: <span class="fl">0.0078</span>, <span class="st">'d_w'</span>: <span class="fl">0.009</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_w1'</span>: <span class="fl">0.0001</span>,   <span class="st">'t_w2'</span>: <span class="fl">0.002</span>,   </span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p1'</span>: <span class="fl">0.004</span>,   <span class="co"># Top Copper Plate</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p2'</span>: <span class="fl">0.004</span>,   <span class="co"># Bottom Copper Plate</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'L_eng'</span>: <span class="fl">0.005</span>,  <span class="co"># thread engagement length (used if 'blind')</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Sync material names with the internal routing matrix properties keys</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_bolt'</span>] <span class="op">=</span> <span class="st">'SS316'</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w1'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w2'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p1'</span>] <span class="op">=</span> <span class="st">'C10100'</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p2'</span>] <span class="op">=</span> <span class="st">'C10100'</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>F_initial <span class="op">=</span> <span class="fl">4000.0</span>  <span class="co"># 10 kN Initial tightening assembly preload at 293.15 K</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> analyze_cryo_joint_universal(geometry, F_initial)</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Create standard fixed figures grid layout</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="fl">4.5</span>))</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>title_mod <span class="op">=</span> <span class="ss">f"(</span><span class="sc">{</span>geometry[<span class="st">'joint_type'</span>]<span class="sc">.</span>upper()<span class="sc">}</span><span class="ss"> topology - </span><span class="sc">{</span>geometry[<span class="st">'washer_mat'</span>]<span class="sc">}</span><span class="ss"> Washers)"</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: Total Joint Force Profile</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'force'</span>] <span class="op">/</span> <span class="fl">1000.0</span>, <span class="st">'crimson'</span>, lw<span class="op">=</span><span class="fl">2.5</span>, label<span class="op">=</span><span class="st">'Joint Clamping Force'</span>)</span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].axhline(F_initial <span class="op">/</span> <span class="fl">1000.0</span>, color<span class="op">=</span><span class="st">'blue'</span>, linestyle<span class="op">=</span><span class="st">':'</span>, label<span class="op">=</span><span class="st">'Room Temp Preload'</span>)</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_title(<span class="ss">f'Total Joint Force Profile</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_ylabel(<span class="st">'Force (kN)'</span>)</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].legend()</span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 2: Collective Strains</span></span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_bolt_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'orange'</span>, label<span class="op">=</span><span class="st">'Total Bolt Shrunk length'</span>)</span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_members_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'purple'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Total Member Stack Shrinkage'</span>)</span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_title(<span class="ss">f'Isolated Thermal Deflections</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_ylabel(<span class="st">'Displacement Relative to 293K ($</span><span class="er">\</span><span class="st">mu$m)'</span>)</span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].legend()</span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 3: Component Stiffness Variance</span></span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_m'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'indigo'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Member Stiffness ($k_m$)'</span>)</span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_b'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'darkcyan'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Bolt Stiffness ($k_b$)'</span>)</span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_title(<span class="ss">f'Joint Component Stiffness Variance</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_ylabel(<span class="st">'Stiffness ($GN/m$)'</span>)</span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].legend()</span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Verification metrics printout</span></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Calculated Joint Grip Length: </span><span class="sc">{</span><span class="bu">float</span>(get_grip_length(geometry))<span class="op">*</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> mm"</span>)</span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Peak Cryogenic Force at 4 K:   </span><span class="sc">{</span><span class="bu">float</span>(data[<span class="st">'force'</span>][<span class="op">-</span><span class="dv">1</span>])<span class="op">/</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> kN"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define configuration geometry variables using standard python entries</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>geometry <span class="op">=</span> {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'joint_type'</span>: <span class="st">'through'</span>,    <span class="co"># &lt;-- CHANGE STRING HERE: 'through' or 'blind'</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'washer_mat'</span>: <span class="st">'SS 316'</span>, <span class="co"># &lt;-- CHANGE STRING HERE: 'MOLYBDENUM' or 'SS316'</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'d_bolt'</span>: <span class="fl">0.00334</span>, <span class="st">'d_h'</span>: <span class="fl">0.0078</span>, <span class="st">'d_w'</span>: <span class="fl">0.009</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_w1'</span>: <span class="fl">0.0001</span>,   <span class="st">'t_w2'</span>: <span class="fl">0.002</span>,   </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p1'</span>: <span class="fl">0.004</span>,   <span class="co"># Top Copper Plate</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p2'</span>: <span class="fl">0.004</span>,   <span class="co"># Bottom Copper Plate</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'L_eng'</span>: <span class="fl">0.005</span>,  <span class="co"># thread engagement length (used if 'blind')</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Sync material names with the internal routing matrix properties keys</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_bolt'</span>] <span class="op">=</span> <span class="st">'SS 316'</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w1'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w2'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p1'</span>] <span class="op">=</span> <span class="st">'Copper-RRR50'</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p2'</span>] <span class="op">=</span> <span class="st">'Copper-RRR50'</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>F_initial <span class="op">=</span> <span class="fl">4000.0</span>  <span class="co"># Initial tightening assembly preload at 293.15 K</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> analyze_cryo_joint_universal(geometry, F_initial)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Create standard fixed figures grid layout</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="fl">4.5</span>))</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>title_mod <span class="op">=</span> <span class="ss">f"(</span><span class="sc">{</span>geometry[<span class="st">'joint_type'</span>]<span class="sc">.</span>upper()<span class="sc">}</span><span class="ss"> topology - </span><span class="sc">{</span>geometry[<span class="st">'washer_mat'</span>]<span class="sc">}</span><span class="ss"> Washers)"</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: Total Joint Force Profile</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'force'</span>] <span class="op">/</span> <span class="fl">1000.0</span>, <span class="st">'crimson'</span>, lw<span class="op">=</span><span class="fl">2.5</span>, label<span class="op">=</span><span class="st">'Joint Clamping Force'</span>)</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].axhline(F_initial <span class="op">/</span> <span class="fl">1000.0</span>, color<span class="op">=</span><span class="st">'blue'</span>, linestyle<span class="op">=</span><span class="st">':'</span>, label<span class="op">=</span><span class="st">'Room Temp Preload'</span>)</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_title(<span class="ss">f'Total Joint Force Profile</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_ylabel(<span class="st">'Force (kN)'</span>)</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].legend()</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 2: Collective Strains</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_bolt_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'orange'</span>, label<span class="op">=</span><span class="st">'Total Bolt Shrunk length'</span>)</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_members_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'purple'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Total Member Stack Shrinkage'</span>)</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_title(<span class="ss">f'Isolated Thermal Deflections</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_ylabel(<span class="st">'Displacement Relative to 293K ($</span><span class="er">\</span><span class="st">mu$m)'</span>)</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].legend()</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 3: Component Stiffness Variance</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_m'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'indigo'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Member Stiffness ($k_m$)'</span>)</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_b'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'darkcyan'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Bolt Stiffness ($k_b$)'</span>)</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_title(<span class="ss">f'Joint Component Stiffness Variance</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_ylabel(<span class="st">'Stiffness ($GN/m$)'</span>)</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].legend()</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Verification metrics printout</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Calculated Joint Grip Length: </span><span class="sc">{</span><span class="bu">float</span>(get_grip_length(geometry))<span class="op">*</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> mm"</span>)</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Peak Cryogenic Force at 4 K:   </span><span class="sc">{</span><span class="bu">float</span>(data[<span class="st">'force'</span>][<span class="op">-</span><span class="dv">1</span>])<span class="op">/</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> kN"</span>)</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Cryogenic Bolt Stress at 4 K: </span><span class="sc">{</span><span class="bu">float</span>(data[<span class="st">'force'</span>][<span class="op">-</span><span class="dv">1</span>])<span class="op">/</span>(np.pi<span class="op">/</span><span class="dv">4</span><span class="op">*</span>geometry[<span class="st">"d_bolt"</span>]<span class="op">**</span><span class="dv">2</span>)<span class="op">/</span><span class="fl">1e6</span><span class="sc">:.2f}</span><span class="ss"> MPa"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -472,75 +461,80 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Calculated Joint Grip Length: 10.10 mm
-Peak Cryogenic Force at 4 K:   3.70 kN</code></pre>
+Peak Cryogenic Force at 4 K:   3.70 kN
+Cryogenic Bolt Stress at 4 K: 422.72 MPa</code></pre>
 </div>
 </div>
-<div id="e776524a-493b-411a-9423-2a302c6b6b89" class="cell" data-execution_count="6">
+</section>
+<section id="ss316-bolt---molybdenum-washer" class="level3">
+<h3 class="anchored" data-anchor-id="ss316-bolt---molybdenum-washer">4.2 SS316 Bolt - Molybdenum Washer</h3>
+<div id="e776524a-493b-411a-9423-2a302c6b6b89" class="cell" data-execution_count="20">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define configuration geometry variables using standard python entries</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>geometry <span class="op">=</span> {</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'joint_type'</span>: <span class="st">'through'</span>,    <span class="co"># &lt;-- CHANGE STRING HERE: 'through' or 'blind'</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'washer_mat'</span>: <span class="st">'MOLY'</span>, <span class="co"># &lt;-- CHANGE STRING HERE: 'MOLYBDENUM' or 'SS316'</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'d_bolt'</span>: <span class="fl">0.00334</span>, <span class="st">'d_h'</span>: <span class="fl">0.0078</span>, <span class="st">'d_w'</span>: <span class="fl">0.009</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_w1'</span>: <span class="fl">0.0001</span>,   <span class="st">'t_w2'</span>: <span class="fl">0.002</span>,   </span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p1'</span>: <span class="fl">0.004</span>,   <span class="co"># Top Copper Plate</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p2'</span>: <span class="fl">0.004</span>,   <span class="co"># Bottom Copper Plate</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'L_eng'</span>: <span class="fl">0.005</span>,  <span class="co"># thread engagement length (used if 'blind')</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Sync material names with the internal routing matrix properties keys</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_bolt'</span>] <span class="op">=</span> <span class="st">'SS316'</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w1'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w2'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p1'</span>] <span class="op">=</span> <span class="st">'C10100'</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p2'</span>] <span class="op">=</span> <span class="st">'C10100'</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>F_initial <span class="op">=</span> <span class="fl">4000.0</span>  <span class="co"># 10 kN Initial tightening assembly preload at 293.15 K</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> analyze_cryo_joint_universal(geometry, F_initial)</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Create standard fixed figures grid layout</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="fl">4.5</span>))</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>title_mod <span class="op">=</span> <span class="ss">f"(</span><span class="sc">{</span>geometry[<span class="st">'joint_type'</span>]<span class="sc">.</span>upper()<span class="sc">}</span><span class="ss"> topology - </span><span class="sc">{</span>geometry[<span class="st">'washer_mat'</span>]<span class="sc">}</span><span class="ss"> Washers)"</span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: Total Joint Force Profile</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'force'</span>] <span class="op">/</span> <span class="fl">1000.0</span>, <span class="st">'crimson'</span>, lw<span class="op">=</span><span class="fl">2.5</span>, label<span class="op">=</span><span class="st">'Joint Clamping Force'</span>)</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].axhline(F_initial <span class="op">/</span> <span class="fl">1000.0</span>, color<span class="op">=</span><span class="st">'blue'</span>, linestyle<span class="op">=</span><span class="st">':'</span>, label<span class="op">=</span><span class="st">'Room Temp Preload'</span>)</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_title(<span class="ss">f'Total Joint Force Profile</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_ylabel(<span class="st">'Force (kN)'</span>)</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].legend()</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 2: Collective Strains</span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_bolt_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'orange'</span>, label<span class="op">=</span><span class="st">'Total Bolt Shrunk length'</span>)</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_members_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'purple'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Total Member Stack Shrinkage'</span>)</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_title(<span class="ss">f'Isolated Thermal Deflections</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_ylabel(<span class="st">'Displacement Relative to 293K ($</span><span class="er">\</span><span class="st">mu$m)'</span>)</span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].legend()</span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 3: Component Stiffness Variance</span></span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_m'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'indigo'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Member Stiffness ($k_m$)'</span>)</span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_b'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'darkcyan'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Bolt Stiffness ($k_b$)'</span>)</span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_title(<span class="ss">f'Joint Component Stiffness Variance</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_ylabel(<span class="st">'Stiffness ($GN/m$)'</span>)</span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].legend()</span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
-<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Verification metrics printout</span></span>
-<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Calculated Joint Grip Length: </span><span class="sc">{</span><span class="bu">float</span>(get_grip_length(geometry))<span class="op">*</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> mm"</span>)</span>
-<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Peak Cryogenic Force at 4 K:   </span><span class="sc">{</span><span class="bu">float</span>(data[<span class="st">'force'</span>][<span class="op">-</span><span class="dv">1</span>])<span class="op">/</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> kN"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define configuration geometry variables using standard python entries</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>geometry <span class="op">=</span> {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'joint_type'</span>: <span class="st">'through'</span>,    <span class="co"># &lt;-- CHANGE STRING HERE: 'through' or 'blind'</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'washer_mat'</span>: <span class="st">'MOLY'</span>, <span class="co"># &lt;-- CHANGE STRING HERE: 'MOLYBDENUM' or 'SS316'</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'d_bolt'</span>: <span class="fl">0.00334</span>, <span class="st">'d_h'</span>: <span class="fl">0.0078</span>, <span class="st">'d_w'</span>: <span class="fl">0.009</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_w1'</span>: <span class="fl">0.0001</span>,   <span class="st">'t_w2'</span>: <span class="fl">0.002</span>,   </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p1'</span>: <span class="fl">0.004</span>,   <span class="co"># Top Copper Plate</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p2'</span>: <span class="fl">0.004</span>,   <span class="co"># Bottom Copper Plate</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'L_eng'</span>: <span class="fl">0.005</span>,  <span class="co"># thread engagement length (used if 'blind')</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Sync material names with the internal routing matrix properties keys</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_bolt'</span>] <span class="op">=</span> <span class="st">'SS316'</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w1'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w2'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p1'</span>] <span class="op">=</span> <span class="st">'C10100'</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p2'</span>] <span class="op">=</span> <span class="st">'C10100'</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>F_initial <span class="op">=</span> <span class="fl">4000.0</span>  <span class="co"># Initial tightening assembly preload at 293.15 K</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> analyze_cryo_joint_universal(geometry, F_initial)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Create standard fixed figures grid layout</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="fl">4.5</span>))</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>title_mod <span class="op">=</span> <span class="ss">f"(</span><span class="sc">{</span>geometry[<span class="st">'joint_type'</span>]<span class="sc">.</span>upper()<span class="sc">}</span><span class="ss"> topology - </span><span class="sc">{</span>geometry[<span class="st">'washer_mat'</span>]<span class="sc">}</span><span class="ss"> Washers)"</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: Total Joint Force Profile</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'force'</span>] <span class="op">/</span> <span class="fl">1000.0</span>, <span class="st">'crimson'</span>, lw<span class="op">=</span><span class="fl">2.5</span>, label<span class="op">=</span><span class="st">'Joint Clamping Force'</span>)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].axhline(F_initial <span class="op">/</span> <span class="fl">1000.0</span>, color<span class="op">=</span><span class="st">'blue'</span>, linestyle<span class="op">=</span><span class="st">':'</span>, label<span class="op">=</span><span class="st">'Room Temp Preload'</span>)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_title(<span class="ss">f'Total Joint Force Profile</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_ylabel(<span class="st">'Force (kN)'</span>)</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].legend()</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 2: Collective Strains</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_bolt_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'orange'</span>, label<span class="op">=</span><span class="st">'Total Bolt Shrunk length'</span>)</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_members_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'purple'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Total Member Stack Shrinkage'</span>)</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_title(<span class="ss">f'Isolated Thermal Deflections</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_ylabel(<span class="st">'Displacement Relative to 293K ($</span><span class="er">\</span><span class="st">mu$m)'</span>)</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].legend()</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 3: Component Stiffness Variance</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_m'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'indigo'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Member Stiffness ($k_m$)'</span>)</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_b'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'darkcyan'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Bolt Stiffness ($k_b$)'</span>)</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_title(<span class="ss">f'Joint Component Stiffness Variance</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_ylabel(<span class="st">'Stiffness ($GN/m$)'</span>)</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].legend()</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Verification metrics printout</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Calculated Joint Grip Length: </span><span class="sc">{</span><span class="bu">float</span>(get_grip_length(geometry))<span class="op">*</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> mm"</span>)</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Cryogenic Force at 4 K:   </span><span class="sc">{</span><span class="bu">float</span>(data[<span class="st">'force'</span>][<span class="op">-</span><span class="dv">1</span>])<span class="op">/</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> kN"</span>)</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Cryogenic Bolt Stress at 4 K: </span><span class="sc">{</span><span class="bu">float</span>(data[<span class="st">'force'</span>][<span class="op">-</span><span class="dv">1</span>])<span class="op">/</span>(np.pi<span class="op">/</span><span class="dv">4</span><span class="op">*</span>geometry[<span class="st">"d_bolt"</span>]<span class="op">**</span><span class="dv">2</span>)<span class="op">/</span><span class="fl">1e6</span><span class="sc">:.2f}</span><span class="ss"> MPa"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -551,11 +545,98 @@ Peak Cryogenic Force at 4 K:   3.70 kN</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Calculated Joint Grip Length: 10.10 mm
-Peak Cryogenic Force at 4 K:   4.35 kN</code></pre>
+Cryogenic Force at 4 K:   4.35 kN
+Cryogenic Bolt Stress at 4 K: 495.97 MPa</code></pre>
+</div>
+</div>
+</section>
+<section id="brass-bolt---ss316-washer" class="level3">
+<h3 class="anchored" data-anchor-id="brass-bolt---ss316-washer">4.3 Brass Bolt - SS316 Washer</h3>
+<p>The noise in the clamp force comes from the digitized modulus data for brass. This needs to be smoothed or re-digitized more carefully.</p>
+<div id="e845fde1-b086-42fa-b889-806636256e85" class="cell" data-execution_count="21">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define configuration geometry variables using standard python entries</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>geometry <span class="op">=</span> {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'joint_type'</span>: <span class="st">'through'</span>,    <span class="co"># &lt;-- CHANGE STRING HERE: 'through' or 'blind'</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'washer_mat'</span>: <span class="st">'SS316'</span>, <span class="co"># &lt;-- CHANGE STRING HERE: 'MOLYBDENUM' or 'SS316'</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'d_bolt'</span>: <span class="fl">0.00334</span>, <span class="st">'d_h'</span>: <span class="fl">0.0078</span>, <span class="st">'d_w'</span>: <span class="fl">0.009</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_w1'</span>: <span class="fl">0.0001</span>,   <span class="st">'t_w2'</span>: <span class="fl">0.002</span>,   </span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p1'</span>: <span class="fl">0.004</span>,   <span class="co"># Top Copper Plate</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">'t_p2'</span>: <span class="fl">0.004</span>,   <span class="co"># Bottom Copper Plate</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'L_eng'</span>: <span class="fl">0.005</span>,  <span class="co"># thread engagement length (used if 'blind')</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Sync material names with the internal routing matrix properties keys</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_bolt'</span>] <span class="op">=</span> <span class="st">'BRASS'</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w1'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_w2'</span>] <span class="op">=</span> geometry[<span class="st">'washer_mat'</span>]</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p1'</span>] <span class="op">=</span> <span class="st">'C10100'</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>geometry[<span class="st">'mat_p2'</span>] <span class="op">=</span> <span class="st">'C10100'</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>F_initial <span class="op">=</span> <span class="fl">4000.0</span>  <span class="co"># Initial tightening assembly preload at 293.15 K</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> analyze_cryo_joint_universal(geometry, F_initial)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Create standard fixed figures grid layout</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>fig, axs <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="fl">4.5</span>))</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>title_mod <span class="op">=</span> <span class="ss">f"(</span><span class="sc">{</span>geometry[<span class="st">'joint_type'</span>]<span class="sc">.</span>upper()<span class="sc">}</span><span class="ss"> topology - </span><span class="sc">{</span>geometry[<span class="st">'washer_mat'</span>]<span class="sc">}</span><span class="ss"> Washers)"</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: Total Joint Force Profile</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'force'</span>] <span class="op">/</span> <span class="fl">1000.0</span>, <span class="st">'crimson'</span>, lw<span class="op">=</span><span class="fl">2.5</span>, label<span class="op">=</span><span class="st">'Joint Clamping Force'</span>)</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].axhline(F_initial <span class="op">/</span> <span class="fl">1000.0</span>, color<span class="op">=</span><span class="st">'blue'</span>, linestyle<span class="op">=</span><span class="st">':'</span>, label<span class="op">=</span><span class="st">'Room Temp Preload'</span>)</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_title(<span class="ss">f'Total Joint Force Profile</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_ylabel(<span class="st">'Force (kN)'</span>)</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">0</span>].legend()</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 2: Collective Strains</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_bolt_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'orange'</span>, label<span class="op">=</span><span class="st">'Total Bolt Shrunk length'</span>)</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'dL_members_total'</span>] <span class="op">*</span> <span class="fl">1e6</span>, <span class="st">'purple'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Total Member Stack Shrinkage'</span>)</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_title(<span class="ss">f'Isolated Thermal Deflections</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_ylabel(<span class="st">'Displacement Relative to 293K ($</span><span class="er">\</span><span class="st">mu$m)'</span>)</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">1</span>].legend()</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 3: Component Stiffness Variance</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_m'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'indigo'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Member Stiffness ($k_m$)'</span>)</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].plot(data[<span class="st">'T'</span>], data[<span class="st">'k_b'</span>] <span class="op">/</span> <span class="fl">1e9</span>, <span class="st">'darkcyan'</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'Bolt Stiffness ($k_b$)'</span>)</span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_title(<span class="ss">f'Joint Component Stiffness Variance</span><span class="ch">\n</span><span class="sc">{</span>title_mod<span class="sc">}</span><span class="ss">'</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlabel(<span class="st">'Temperature (K)'</span>)</span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_ylabel(<span class="st">'Stiffness ($GN/m$)'</span>)</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].set_xlim(<span class="dv">300</span>, <span class="dv">0</span>)</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].grid(<span class="va">True</span>, linestyle<span class="op">=</span><span class="st">':'</span>, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a>axs[<span class="dv">2</span>].legend()</span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Verification metrics printout</span></span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Calculated Joint Grip Length: </span><span class="sc">{</span><span class="bu">float</span>(get_grip_length(geometry))<span class="op">*</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> mm"</span>)</span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Peak Cryogenic Force at 4 K:   </span><span class="sc">{</span><span class="bu">float</span>(data[<span class="st">'force'</span>][<span class="op">-</span><span class="dv">1</span>])<span class="op">/</span><span class="fl">1000.0</span><span class="sc">:.2f}</span><span class="ss"> kN"</span>)</span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Cryogenic Bolt Stress at 4 K: </span><span class="sc">{</span><span class="bu">float</span>(data[<span class="st">'force'</span>][<span class="op">-</span><span class="dv">1</span>])<span class="op">/</span>(np.pi<span class="op">/</span><span class="dv">4</span><span class="op">*</span>geometry[<span class="st">"d_bolt"</span>]<span class="op">**</span><span class="dv">2</span>)<span class="op">/</span><span class="fl">1e6</span><span class="sc">:.2f}</span><span class="ss"> MPa"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Bolted_Joint_Cryo_v3_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Calculated Joint Grip Length: 10.10 mm
+Peak Cryogenic Force at 4 K:   4.49 kN
+Cryogenic Bolt Stress at 4 K: 512.24 MPa</code></pre>
 </div>
 </div>
 
 
+</section>
 </section>
 </section>
 
