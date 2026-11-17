@@ -187,12 +187,12 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#tubing-geometric-data" id="toc-tubing-geometric-data" class="nav-link active" data-scroll-target="#tubing-geometric-data">Tubing Geometric Data</a></li>
+  <li><a href="#tubing-geometric-data" id="toc-tubing-geometric-data" class="nav-link active" data-scroll-target="#tubing-geometric-data">1. Tubing Geometric Data</a></li>
   <li><a href="#tube-geometry-and-end-temperatures" id="toc-tube-geometry-and-end-temperatures" class="nav-link" data-scroll-target="#tube-geometry-and-end-temperatures">2. Tube geometry and end temperatures</a></li>
   <li><a href="#axial-heat-conduction-calculation" id="toc-axial-heat-conduction-calculation" class="nav-link" data-scroll-target="#axial-heat-conduction-calculation">3. Axial heat conduction calculation</a></li>
   <li><a href="#axial-temperature-profile" id="toc-axial-temperature-profile" class="nav-link" data-scroll-target="#axial-temperature-profile">4. Axial temperature profile</a></li>
-  <li><a href="#design-map" id="toc-design-map" class="nav-link" data-scroll-target="#design-map">4. Design Map</a></li>
-  <li><a href="#important-assumptions-and-limitations" id="toc-important-assumptions-and-limitations" class="nav-link" data-scroll-target="#important-assumptions-and-limitations">5. Important assumptions and limitations</a></li>
+  <li><a href="#design-map" id="toc-design-map" class="nav-link" data-scroll-target="#design-map">5. Design Map</a></li>
+  <li><a href="#important-assumptions-and-limitations" id="toc-important-assumptions-and-limitations" class="nav-link" data-scroll-target="#important-assumptions-and-limitations">6. Important assumptions and limitations</a></li>
   </ul>
 </nav>
     </div>
@@ -220,7 +220,7 @@ window.Quarto = {
 
 <p>This notebook shows common dimensions of SS Swagelok tubing and estimates steady-state heat conducted down the length of a 316 stainless steel tube, from a warm end to a cold end. Often times in cryogenic gas systems, SS tubing is used to traverse a cryostat from room temperature down to cryogenic temperatures. Estimating the heat load can be useful to figure out if you need more tubing length or a smaller diameter to reduce heat loads on the cryostat, or if you need more tubing volume you can figure out how much additional heat load you might apply to the cryostat.</p>
 <p>Here we use the NIST cryogenic thermal-conductivity curve fit for the specific metal. <a href="https://trc.nist.gov/cryogenics/index.html"><strong>NIST</strong></a> has some great publications and a resources on cryogenic properties of common materials. Solids are accessible on the website, and liquids/gases can be accessed through the RefProp software package, which is similar to <a href="https://coolprop.org/"><strong>CoolProp</strong></a>.</p>
-<div id="169cc25b-fc60-442c-831d-3f6afa66bdc3" class="cell" data-execution_count="19">
+<div id="169cc25b-fc60-442c-831d-3f6afa66bdc3" class="cell" data-execution_count="65">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Load all of the libraries</span></span>
@@ -232,10 +232,10 @@ window.Quarto = {
 </details>
 </div>
 <section id="tubing-geometric-data" class="level2">
-<h2 class="anchored" data-anchor-id="tubing-geometric-data">Tubing Geometric Data</h2>
-<p>Often times, when designing or operating low volume gas handling systems, knowing the volume per unit length of tube can be useful. This section reads the tubing data for Swagelok 316SS tubing (<a href="https://www.swagelok.com/downloads/webcatalogs/en/ms-01-107.pdf">Tabel 3 - Fractional Stainless Steel Seamless Tubing</a>), adds tubing volume (cc) per inch length and inch length per unit volume (cc). Calcuating volume (cc) per inch length is as simple as multiplying the tube cross-section by the unit conversion cubed.<br>
+<h2 class="anchored" data-anchor-id="tubing-geometric-data">1. Tubing Geometric Data</h2>
+<p>Often times, when designing or operating low volume gas handling systems, knowing the volume per unit length of tube can be useful. This section reads the tubing data for Swagelok 316SS tubing (<a href="https://www.swagelok.com/downloads/webcatalogs/en/ms-01-107.pdf">Table 3 - Fractional Stainless Steel Seamless Tubing</a>), adds tubing volume (cc) per inch length and inch length per unit volume (cc). Calcuating volume (cc) per inch length is as simple as multiplying the tube cross-section by the unit conversion cubed.<br>
 <span class="math display">\[\frac{Vol [cc]}{Len [in]} = \frac{\pi \cdot (OD[in] - 2*thk[in])^2}{4} \cdot (2.54\frac{[cm]}{[in]})^3\]</span></p>
-<div id="cc86c2a9-fee6-4d82-b0db-898670bc0a1a" class="cell" data-execution_count="20">
+<div id="cc86c2a9-fee6-4d82-b0db-898670bc0a1a" class="cell" data-execution_count="66">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fractions <span class="im">import</span> Fraction</span>
@@ -247,420 +247,10 @@ window.Quarto = {
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>tubes[(<span class="st">"len_vol"</span>,<span class="st">"in/cc"</span>)] <span class="op">=</span> <span class="dv">1</span><span class="op">/</span>tubes[(<span class="st">"vol_len"</span>,<span class="st">"cc/in"</span>)]</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>tubes[(<span class="st">"OD"</span>,<span class="st">"in"</span>)] <span class="op">=</span> tubes[(<span class="st">"OD"</span>,<span class="st">"in"</span>)].<span class="bu">apply</span>(<span class="kw">lambda</span> x: Fraction(x).limit_denominator(<span class="dv">16</span>))</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>tubes[(<span class="st">"Ax_gas"</span>,<span class="st">"in^2"</span>)] <span class="op">=</span> np.pi<span class="op">/</span><span class="dv">4</span><span class="op">*</span>(tubes[(<span class="st">"OD"</span>,<span class="st">"in"</span>)] <span class="op">-</span> <span class="dv">2</span><span class="op">*</span>tubes[(<span class="st">"Wall"</span>,<span class="st">"in"</span>)])<span class="op">**</span><span class="dv">2</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>tubes[(<span class="st">"Ax_metal"</span>,<span class="st">"in^2"</span>)] <span class="op">=</span> np.pi<span class="op">/</span><span class="dv">4</span><span class="op">*</span>(tubes[(<span class="st">"OD"</span>,<span class="st">"in"</span>)]<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> tubes[(<span class="st">"ID"</span>,<span class="st">"in"</span>)]<span class="op">**</span><span class="dv">2</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>tubes.<span class="bu">round</span>(<span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>tubes[(<span class="st">"Ax_metal"</span>,<span class="st">"in^2"</span>)] <span class="op">=</span> np.pi<span class="op">/</span><span class="dv">4</span><span class="op">*</span>(tubes[(<span class="st">"OD"</span>,<span class="st">"in"</span>)]<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> tubes[(<span class="st">"ID"</span>,<span class="st">"in"</span>)]<span class="op">**</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="20">
-<div>
-
-
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">OD</th>
-<th data-quarto-table-cell-role="th">Wall</th>
-<th data-quarto-table-cell-role="th">Pressure</th>
-<th data-quarto-table-cell-role="th">ID</th>
-<th data-quarto-table-cell-role="th">vol_len</th>
-<th data-quarto-table-cell-role="th">len_vol</th>
-<th data-quarto-table-cell-role="th">Ax_gas</th>
-<th data-quarto-table-cell-role="th">Ax_metal</th>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">in</th>
-<th data-quarto-table-cell-role="th">in</th>
-<th data-quarto-table-cell-role="th">psig</th>
-<th data-quarto-table-cell-role="th">in</th>
-<th data-quarto-table-cell-role="th">cc/in</th>
-<th data-quarto-table-cell-role="th">in/cc</th>
-<th data-quarto-table-cell-role="th">in^2</th>
-<th data-quarto-table-cell-role="th">in^2</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">0</th>
-<td>1/16</td>
-<td>0.010</td>
-<td>5,600</td>
-<td>0.052</td>
-<td>0.023</td>
-<td>43.016</td>
-<td>0.001419</td>
-<td>0.000903</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">1</th>
-<td>1/16</td>
-<td>0.012</td>
-<td>6,800</td>
-<td>0.050</td>
-<td>0.019</td>
-<td>52.419</td>
-<td>0.001164</td>
-<td>0.001065</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">2</th>
-<td>1/16</td>
-<td>0.014</td>
-<td>8,100</td>
-<td>0.048</td>
-<td>0.015</td>
-<td>65.279</td>
-<td>0.000935</td>
-<td>0.001221</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">3</th>
-<td>1/16</td>
-<td>0.016</td>
-<td>9,400</td>
-<td>0.046</td>
-<td>0.012</td>
-<td>83.524</td>
-<td>0.000731</td>
-<td>0.00137</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">4</th>
-<td>1/16</td>
-<td>0.020</td>
-<td>12,000</td>
-<td>0.042</td>
-<td>0.007</td>
-<td>153.477</td>
-<td>0.000398</td>
-<td>0.001649</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">5</th>
-<td>1/8</td>
-<td>0.028</td>
-<td>8,500</td>
-<td>0.097</td>
-<td>0.061</td>
-<td>16.320</td>
-<td>0.003739</td>
-<td>0.004882</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">6</th>
-<td>1/8</td>
-<td>0.035</td>
-<td>10,900</td>
-<td>0.090</td>
-<td>0.039</td>
-<td>25.685</td>
-<td>0.002376</td>
-<td>0.00591</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">7</th>
-<td>3/16</td>
-<td>0.028</td>
-<td>5,400</td>
-<td>0.160</td>
-<td>0.223</td>
-<td>4.493</td>
-<td>0.013581</td>
-<td>0.007631</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">8</th>
-<td>3/16</td>
-<td>0.035</td>
-<td>7,000</td>
-<td>0.152</td>
-<td>0.178</td>
-<td>5.628</td>
-<td>0.010843</td>
-<td>0.009346</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">9</th>
-<td>3/16</td>
-<td>0.049</td>
-<td>10,200</td>
-<td>0.138</td>
-<td>0.103</td>
-<td>9.700</td>
-<td>0.006291</td>
-<td>0.012546</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">10</th>
-<td>1/4</td>
-<td>0.028</td>
-<td>4,000</td>
-<td>0.222</td>
-<td>0.484</td>
-<td>2.064</td>
-<td>0.029559</td>
-<td>0.01038</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">11</th>
-<td>1/4</td>
-<td>0.035</td>
-<td>5,100</td>
-<td>0.215</td>
-<td>0.417</td>
-<td>2.398</td>
-<td>0.025447</td>
-<td>0.012782</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">12</th>
-<td>1/4</td>
-<td>0.049</td>
-<td>7,500</td>
-<td>0.201</td>
-<td>0.297</td>
-<td>3.363</td>
-<td>0.018146</td>
-<td>0.017357</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">13</th>
-<td>1/4</td>
-<td>0.065</td>
-<td>10,200</td>
-<td>0.185</td>
-<td>0.185</td>
-<td>5.396</td>
-<td>0.01131</td>
-<td>0.022207</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">14</th>
-<td>5/16</td>
-<td>0.035</td>
-<td>4,000</td>
-<td>0.277</td>
-<td>0.757</td>
-<td>1.321</td>
-<td>0.046186</td>
-<td>0.016218</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">15</th>
-<td>5/16</td>
-<td>0.049</td>
-<td>5,800</td>
-<td>0.264</td>
-<td>0.592</td>
-<td>1.689</td>
-<td>0.036136</td>
-<td>0.022167</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">16</th>
-<td>5/16</td>
-<td>0.065</td>
-<td>8,000</td>
-<td>0.248</td>
-<td>0.429</td>
-<td>2.333</td>
-<td>0.026159</td>
-<td>0.028588</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">17</th>
-<td>3/8</td>
-<td>0.035</td>
-<td>3,300</td>
-<td>0.340</td>
-<td>1.197</td>
-<td>0.835</td>
-<td>0.073062</td>
-<td>0.019655</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">18</th>
-<td>3/8</td>
-<td>0.049</td>
-<td>4,800</td>
-<td>0.326</td>
-<td>0.988</td>
-<td>1.013</td>
-<td>0.060263</td>
-<td>0.026978</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">19</th>
-<td>3/8</td>
-<td>0.065</td>
-<td>6,500</td>
-<td>0.310</td>
-<td>0.773</td>
-<td>1.294</td>
-<td>0.047144</td>
-<td>0.03497</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">20</th>
-<td>3/8</td>
-<td>0.083</td>
-<td>7,500</td>
-<td>0.292</td>
-<td>0.562</td>
-<td>1.779</td>
-<td>0.034307</td>
-<td>0.04348</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">21</th>
-<td>1/2</td>
-<td>0.035</td>
-<td>2,600</td>
-<td>0.465</td>
-<td>2.380</td>
-<td>0.420</td>
-<td>0.14522</td>
-<td>0.026527</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">22</th>
-<td>1/2</td>
-<td>0.049</td>
-<td>3,700</td>
-<td>0.451</td>
-<td>2.080</td>
-<td>0.481</td>
-<td>0.126923</td>
-<td>0.036599</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">23</th>
-<td>1/2</td>
-<td>0.065</td>
-<td>5,100</td>
-<td>0.435</td>
-<td>1.762</td>
-<td>0.568</td>
-<td>0.107521</td>
-<td>0.047733</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">24</th>
-<td>1/2</td>
-<td>0.083</td>
-<td>6,700</td>
-<td>0.417</td>
-<td>1.436</td>
-<td>0.696</td>
-<td>0.087616</td>
-<td>0.059777</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">25</th>
-<td>5/8</td>
-<td>0.049</td>
-<td>2,900</td>
-<td>0.576</td>
-<td>3.574</td>
-<td>0.280</td>
-<td>0.218128</td>
-<td>0.04622</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">26</th>
-<td>5/8</td>
-<td>0.065</td>
-<td>4,000</td>
-<td>0.560</td>
-<td>3.154</td>
-<td>0.317</td>
-<td>0.192442</td>
-<td>0.060495</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">27</th>
-<td>5/8</td>
-<td>0.083</td>
-<td>5,200</td>
-<td>0.542</td>
-<td>2.712</td>
-<td>0.369</td>
-<td>0.165468</td>
-<td>0.076074</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">28</th>
-<td>5/8</td>
-<td>0.095</td>
-<td>6,000</td>
-<td>0.530</td>
-<td>2.435</td>
-<td>0.411</td>
-<td>0.148617</td>
-<td>0.086178</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">29</th>
-<td>3/4</td>
-<td>0.049</td>
-<td>2,400</td>
-<td>0.701</td>
-<td>5.471</td>
-<td>0.183</td>
-<td>0.333876</td>
-<td>0.055841</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">30</th>
-<td>3/4</td>
-<td>0.065</td>
-<td>3,300</td>
-<td>0.685</td>
-<td>4.947</td>
-<td>0.202</td>
-<td>0.301907</td>
-<td>0.073258</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">31</th>
-<td>3/4</td>
-<td>0.083</td>
-<td>4,200</td>
-<td>0.667</td>
-<td>4.390</td>
-<td>0.228</td>
-<td>0.267865</td>
-<td>0.092371</td>
-</tr>
-<tr class="odd">
-<th data-quarto-table-cell-role="th">32</th>
-<td>3/4</td>
-<td>0.095</td>
-<td>4,900</td>
-<td>0.655</td>
-<td>4.036</td>
-<td>0.248</td>
-<td>0.246301</td>
-<td>0.104831</td>
-</tr>
-<tr class="even">
-<th data-quarto-table-cell-role="th">33</th>
-<td>3/4</td>
-<td>0.109</td>
-<td>5,800</td>
-<td>0.641</td>
-<td>3.643</td>
-<td>0.275</td>
-<td>0.222287</td>
-<td>0.119081</td>
-</tr>
-</tbody>
-</table>
-
 </div>
-</div>
-</div>
-<div id="49726b5d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:470,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="21">
+<div id="49726b5d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:470,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="67">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># NIST Type 316 stainless steel thermal conductivity coefficients</span></span>
@@ -684,23 +274,23 @@ window.Quarto = {
 <section id="tube-geometry-and-end-temperatures" class="level2">
 <h2 class="anchored" data-anchor-id="tube-geometry-and-end-temperatures">2. Tube geometry and end temperatures</h2>
 <p><strong>Physical model:</strong> one-dimensional, steady-state axial conduction through the metal annular cross-section of a straight tube. The two ends are held at specified temperatures. The model assumes no heat exchange with the surroundings along the tube, no parallel heat paths through fittings/supports, and constant tube dimensions.</p>
-<p>Edit the inputs below.</p>
+<p>The metal cross-sectional area conducting heat axially is the annular area:</p>
+<p><span class="math inline">\(A_m=\frac{\pi}{4}(D_o^2-D_i^2)\)</span> where <span class="math inline">\((D_i=D_o-2t)\)</span>.</p>
+<p>This is <strong>not</strong> the fluid-flow area inside the tube.</p>
+<p>Edit the inputs below for the rest of the notebook calculations:</p>
 <ul>
 <li><code>tube_od_in</code>: tube outside diameter, inches</li>
 <li><code>wall_thickness_in</code>: wall thickness, inches</li>
 <li><code>tube_length_m</code>: axial length between the warm and cold ends, metres</li>
 <li><code>T_warm_K</code>, <code>T_cold_K</code>: temperatures at the two ends, kelvin</li>
 </ul>
-<p>The metal cross-sectional area conducting heat axially is the annular area:</p>
-<p><span class="math inline">\(A_m=\frac{\pi}{4}(D_o^2-D_i^2)\)</span></p>
-<p>where <span class="math inline">\((D_i=D_o-2t)\)</span>. This is <strong>not</strong> the fluid-flow area inside the tube.</p>
-<div id="fc33fce4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="22">
+<div id="fc33fce4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="68">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># -------- USER INPUTS: EDIT THESE VALUES --------</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>tube_od_in <span class="op">=</span> <span class="fl">0.1250</span>           <span class="co"># tube outside diameter, inches</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>wall_thickness_in <span class="op">=</span> <span class="fl">0.028</span>    <span class="co"># wall thickness, inches</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>tube_length_m <span class="op">=</span> <span class="fl">0.0254</span>          <span class="co"># axial distance between warm and cold ends, metres</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>tube_length_m <span class="op">=</span> <span class="dv">1</span>          <span class="co"># axial distance between warm and cold ends, metres</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>T_warm_K <span class="op">=</span> <span class="fl">293.0</span>             <span class="co"># warm-end temperature, kelvin</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>T_cold_K <span class="op">=</span> <span class="fl">77.0</span>              <span class="co"># cold-end temperature, kelvin</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ------------------------------------------------</span></span>
@@ -723,19 +313,12 @@ window.Quarto = {
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>Di_m <span class="op">=</span> tube_id_in <span class="op">*</span> IN_TO_M</span>
 <span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>metal_area_m2 <span class="op">=</span> np.pi<span class="op">/</span><span class="dv">4</span> <span class="op">*</span> (Do_m<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> Di_m<span class="op">**</span><span class="dv">2</span>)</span>
 <span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Tube OD: </span><span class="sc">{</span>tube_od_in<span class="sc">:.4f}</span><span class="ss"> in"</span>)</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Tube ID: </span><span class="sc">{</span>tube_id_in<span class="sc">:.4f}</span><span class="ss"> in"</span>)</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Metal cross-sectional area: </span><span class="sc">{</span>metal_area_m2<span class="sc">:.6e}</span><span class="ss"> m²"</span>)</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Axial length: </span><span class="sc">{</span>tube_length_m<span class="sc">:.4g}</span><span class="ss"> m"</span>)</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"End temperatures: </span><span class="sc">{</span>T_warm_K<span class="sc">:.2f}</span><span class="ss"> K and </span><span class="sc">{</span>T_cold_K<span class="sc">:.2f}</span><span class="ss"> K"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co"># print(f"Tube OD: {tube_od_in:.4f} in")</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># print(f"Tube ID: {tube_id_in:.4f} in")</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="co"># print(f"Metal cross-sectional area: {metal_area_m2:.6e} m²")</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co"># print(f"Axial length: {tube_length_m:.4g} m")</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co"># print(f"End temperatures: {T_warm_K:.2f} K and {T_cold_K:.2f} K")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Tube OD: 0.1250 in
-Tube ID: 0.0690 in
-Metal cross-sectional area: 5.504870e-06 m²
-Axial length: 0.0254 m
-End temperatures: 293.00 K and 77.00 K</code></pre>
-</div>
 </div>
 </section>
 <section id="axial-heat-conduction-calculation" class="level2">
@@ -750,100 +333,94 @@ End temperatures: 293.00 K and 77.00 K</code></pre>
 <li><span class="math inline">\((k(T))\)</span> = thermal conductivity [W/(m·K)]</li>
 <li><span class="math inline">\((T_h,T_c)\)</span> = warm- and cold-end temperatures [K]</li>
 </ul>
-<p>The integral is evaluated numerically. The reported heat leak is a positive magnitude, flowing from the warm end toward the cold end.</p>
-<div id="3032ac9e-6339-4441-85bb-cd7a2723072e" class="cell" data-execution_count="23">
+<p>The integral is evaluated numerically. The reported heat leak is positive in magnitude, flowing from the warm end toward the cold end.</p>
+<p>The heat leak below is presented per unit length of tubing in centimeters and inches. Recall that the heat flow in this condition scales inversely with length, so the heat leak through a tube of known length will be the table value divided by the acutal tube length in the correct units.</p>
+<div id="3032ac9e-6339-4441-85bb-cd7a2723072e" class="cell" data-execution_count="69">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_tubing_heat_leak(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    tubes_df,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    k_func,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    T_low,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    T_high,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    tube_length_m,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    material_label<span class="op">=</span><span class="st">"316SS"</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>):</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">    Propagates axial conduction heat leak across a multi-header tubing DataFrame.</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">        tubes_df (pd.DataFrame): DataFrame containing ('OD', 'in') and ('ID', 'in').</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">        k_func (callable): Thermal conductivity function k(T) in W/(m-K).</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co">        T_low (float): Cold boundary temperature in K.</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co">        T_high (float): Warm boundary temperature in K.</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="co">        tube_length_m (float): Axial length of the tube in meters.</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co">        material_label (str): Label for tracking the evaluated material.</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="co">        results_df (pd.DataFrame): Copy of tubes_df with appended heat leak columns.</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co">        summary_info (dict): Scalar integration metrics for reference.</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. Perform the numerical integration once for the given material &amp; temperature bounds</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    integral_k_dT, integration_error <span class="op">=</span> quad(</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        <span class="kw">lambda</span> T: k_func(T),</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        T_low,</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        T_high,</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        epsabs<span class="op">=</span><span class="fl">1e-9</span>,</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>        epsrel<span class="op">=</span><span class="fl">1e-8</span>,</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. Extract OD and ID in inches from the multi-header DataFrame</span></span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>    od_in <span class="op">=</span> tubes_df[(<span class="st">"OD"</span>, <span class="st">"in"</span>)]</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    id_in <span class="op">=</span> tubes_df[(<span class="st">"ID"</span>, <span class="st">"in"</span>)]</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Calculate annular metal cross-sectional area and convert in² to m²</span></span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    in2_to_m2 <span class="op">=</span> (<span class="fl">0.0254</span>) <span class="op">**</span> <span class="dv">2</span></span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    area_in2 <span class="op">=</span> (np.pi <span class="op">/</span> <span class="fl">4.0</span>) <span class="op">*</span> (od_in<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> id_in<span class="op">**</span><span class="dv">2</span>)</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    area_m2 <span class="op">=</span> area_in2 <span class="op">*</span> in2_to_m2</span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Vectorized heat leak calculations across all tube rows</span></span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    qdot_W <span class="op">=</span> (area_m2 <span class="op">/</span> tube_length_m) <span class="op">*</span> integral_k_dT</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>    qdot_per_cm <span class="op">=</span> qdot_W <span class="op">/</span> tube_length_m <span class="op">*</span> <span class="dv">100</span>  <span class="co"># Equivalent to area_m2 * integral_k_dT for 1m length</span></span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 5. Build the output DataFrame preserving your MultiIndex structure</span></span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    results_df <span class="op">=</span> tubes_df[[(<span class="st">"OD"</span>, <span class="st">"in"</span>), (<span class="st">"Wall"</span>, <span class="st">"in"</span>)]].copy()</span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>    results_df[(<span class="st">"Metal Area"</span>, <span class="st">"m²"</span>)] <span class="op">=</span> area_m2</span>
-<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    results_df[(<span class="ss">f"Heat Leak (</span><span class="sc">{</span>material_label<span class="sc">}</span><span class="ss">)"</span>, <span class="st">"W"</span>)] <span class="op">=</span> qdot_W</span>
-<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>    results_df[(<span class="ss">f"Heat Leak per cm (</span><span class="sc">{</span>material_label<span class="sc">}</span><span class="ss">)"</span>, <span class="st">"W/cm"</span>)] <span class="op">=</span> qdot_per_cm</span>
-<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>    results_df[(<span class="ss">f"Heat Leak per in (</span><span class="sc">{</span>material_label<span class="sc">}</span><span class="ss">)"</span>, <span class="st">"W/in"</span>)] <span class="op">=</span> qdot_W <span class="op">/</span>tube_length_m <span class="op">/</span><span class="fl">0.0254</span></span>
-<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Store scalar integration metrics for verification</span></span>
-<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>    summary_info <span class="op">=</span> {</span>
-<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Material"</span>: material_label,</span>
-<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>        <span class="st">"T_low (K)"</span>: T_low,</span>
-<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>        <span class="st">"T_high (K)"</span>: T_high,</span>
-<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Tube Length (m)"</span>: tube_length_m,</span>
-<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Integrated Conductivity (W/m)"</span>: integral_k_dT,</span>
-<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Integration Error (W/m)"</span>: integration_error,</span>
-<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results_df, summary_info</span>
-<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Example Execution ---</span></span>
-<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a><span class="co"># Assuming `tubes` and `k_316ss` are already defined in your notebook:</span></span>
-<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>tubes_results, int_metrics <span class="op">=</span> calculate_tubing_heat_leak(</span>
-<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>    tubes_df<span class="op">=</span>tubes,</span>
-<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>    k_func<span class="op">=</span>tube_material.thermal_conductivity,</span>
-<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>    T_low<span class="op">=</span>T_cold_K,</span>
-<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>    T_high<span class="op">=</span>T_warm_K,</span>
-<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>    tube_length_m<span class="op">=</span><span class="fl">0.5</span>,</span>
-<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>    material_label<span class="op">=</span><span class="st">"316SS"</span></span>
-<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a><span class="co"># Print integration diagnostics and display the updated DataFrame</span></span>
-<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> key, val <span class="kw">in</span> int_metrics.items():</span>
-<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>key<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>val<span class="sc">:.6g}</span><span class="ss">"</span> <span class="cf">if</span> <span class="bu">isinstance</span>(val, <span class="bu">float</span>) <span class="cf">else</span> <span class="ss">f"</span><span class="sc">{</span>key<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>val<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>tubes_results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_tubing_heat_leak(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    tubes_df,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    k_func,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    T_low,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    T_high,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    tube_length_m,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    material_label<span class="op">=</span><span class="st">"316SS"</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">    Propagates axial conduction heat leak across a multi-header tubing DataFrame.</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters:</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">        tubes_df (pd.DataFrame): DataFrame containing ('OD', 'in') and ('ID', 'in').</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co">        k_func (callable): Thermal conductivity function k(T) in W/(m-K).</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">        T_low (float): Cold boundary temperature in K.</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co">        T_high (float): Warm boundary temperature in K.</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">        tube_length_m (float): Axial length of the tube in meters.</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">        material_label (str): Label for tracking the evaluated material.</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co">        results_df (pd.DataFrame): Copy of tubes_df with appended heat leak columns.</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co">        summary_info (dict): Scalar integration metrics for reference.</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. Perform the numerical integration once for the given material &amp; temperature bounds</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    integral_k_dT, integration_error <span class="op">=</span> quad(</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>        <span class="kw">lambda</span> T: k_func(T),</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        T_low,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        T_high,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        epsabs<span class="op">=</span><span class="fl">1e-9</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>        epsrel<span class="op">=</span><span class="fl">1e-8</span>,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. Extract OD and ID in inches from the multi-header DataFrame</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>    od_in <span class="op">=</span> tubes_df[(<span class="st">"OD"</span>, <span class="st">"in"</span>)]</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    id_in <span class="op">=</span> tubes_df[(<span class="st">"ID"</span>, <span class="st">"in"</span>)]</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Calculate annular metal cross-sectional area and convert in² to m²</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    in2_to_m2 <span class="op">=</span> (<span class="fl">0.0254</span>) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    area_in2 <span class="op">=</span> (np.pi <span class="op">/</span> <span class="fl">4.0</span>) <span class="op">*</span> (od_in<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> id_in<span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    area_m2 <span class="op">=</span> area_in2 <span class="op">*</span> in2_to_m2</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Vectorized heat leak calculations across all tube rows</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    qdot_W <span class="op">=</span> (area_m2 <span class="op">/</span> tube_length_m) <span class="op">*</span> integral_k_dT</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    qdot_per_cm <span class="op">=</span> (area_m2 <span class="op">/</span> <span class="fl">0.01</span>) <span class="op">*</span> integral_k_dT  <span class="co"># Equivalent to area_m2 * integral_k_dT for 1m length</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    qdot_per_in <span class="op">=</span> (area_m2 <span class="op">/</span> <span class="fl">0.0254</span>) <span class="op">*</span> integral_k_dT</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 5. Build the output DataFrame preserving your MultiIndex structure</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>    results_df <span class="op">=</span> tubes_df[[(<span class="st">"OD"</span>, <span class="st">"in"</span>), (<span class="st">"Wall"</span>, <span class="st">"in"</span>), (<span class="st">"vol_len"</span>,<span class="st">"cc/in"</span>), (<span class="st">"len_vol"</span>,<span class="st">"in/cc"</span>)]].copy()</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    <span class="co"># results_df[("Metal Area", "m²")] = area_m2</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    <span class="co"># results_df[(f"Heat Leak ({material_label})", "W")] = qdot_W</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>    results_df[(<span class="ss">f"Heat Leak per cm (</span><span class="sc">{</span>T_high<span class="sc">}</span><span class="ss"> --&gt; </span><span class="sc">{</span>T_low<span class="sc">}</span><span class="ss">)"</span>, <span class="st">"W"</span>)] <span class="op">=</span> qdot_per_cm</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>    results_df[(<span class="ss">f"Heat Leak per in (</span><span class="sc">{</span>T_high<span class="sc">}</span><span class="ss"> --&gt; </span><span class="sc">{</span>T_low<span class="sc">}</span><span class="ss">)"</span>, <span class="st">"W"</span>)] <span class="op">=</span> qdot_per_in</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Store scalar integration metrics for verification</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    summary_info <span class="op">=</span> {</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Material"</span>: material_label,</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>        <span class="st">"T_low (K)"</span>: T_low,</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>        <span class="st">"T_high (K)"</span>: T_high,</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Tube Length (m)"</span>: tube_length_m,</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Integrated Conductivity (W/m)"</span>: integral_k_dT,</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Integration Error (W/m)"</span>: integration_error,</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results_df, summary_info</span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Example Execution ---</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="co"># Assuming `tubes` and `k_316ss` are already defined in your notebook:</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>tubes_results, int_metrics <span class="op">=</span> calculate_tubing_heat_leak(</span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    tubes_df<span class="op">=</span>tubes,</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>    k_func<span class="op">=</span>tube_material.thermal_conductivity,</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>    T_low<span class="op">=</span>T_cold_K,</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>    T_high<span class="op">=</span>T_warm_K,</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>    tube_length_m<span class="op">=</span>tube_length_m,</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>    material_label<span class="op">=</span><span class="st">"316SS"</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="co"># # Print integration diagnostics and display the updated DataFrame</span></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a><span class="co"># for key, val in int_metrics.items():</span></span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="co">#     print(f"{key}: {val:.6g}" if isinstance(val, float) else f"{key}: {val}")</span></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>tubes_results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Material: 316SS
-T_low (K): 77
-T_high (K): 293
-Tube Length (m): 0.5
-Integrated Conductivity (W/m): 2598.2
-Integration Error (W/m): 2.88458e-11</code></pre>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="23">
+<div class="cell-output cell-output-display" data-execution_count="69">
 <div>
 
 
@@ -853,19 +430,19 @@ Integration Error (W/m): 2.88458e-11</code></pre>
 <th data-quarto-table-cell-role="th"></th>
 <th data-quarto-table-cell-role="th">OD</th>
 <th data-quarto-table-cell-role="th">Wall</th>
-<th data-quarto-table-cell-role="th">Metal Area</th>
-<th data-quarto-table-cell-role="th">Heat Leak (316SS)</th>
-<th data-quarto-table-cell-role="th">Heat Leak per cm (316SS)</th>
-<th data-quarto-table-cell-role="th">Heat Leak per in (316SS)</th>
+<th data-quarto-table-cell-role="th">vol_len</th>
+<th data-quarto-table-cell-role="th">len_vol</th>
+<th data-quarto-table-cell-role="th">Heat Leak per cm (293.0 --&gt; 77.0)</th>
+<th data-quarto-table-cell-role="th">Heat Leak per in (293.0 --&gt; 77.0)</th>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th"></th>
 <th data-quarto-table-cell-role="th">in</th>
 <th data-quarto-table-cell-role="th">in</th>
-<th data-quarto-table-cell-role="th">m²</th>
+<th data-quarto-table-cell-role="th">cc/in</th>
+<th data-quarto-table-cell-role="th">in/cc</th>
 <th data-quarto-table-cell-role="th">W</th>
-<th data-quarto-table-cell-role="th">W/cm</th>
-<th data-quarto-table-cell-role="th">W/in</th>
+<th data-quarto-table-cell-role="th">W</th>
 </tr>
 </thead>
 <tbody>
@@ -873,307 +450,307 @@ Integration Error (W/m): 2.88458e-11</code></pre>
 <th data-quarto-table-cell-role="th">0</th>
 <td>1/16</td>
 <td>0.010</td>
-<td>0.000001</td>
-<td>0.003028</td>
-<td>0.605603</td>
-<td>0.238426</td>
+<td>0.023247</td>
+<td>43.016107</td>
+<td>0.151401</td>
+<td>0.059607</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
 <td>1/16</td>
 <td>0.012</td>
-<td>0.000001</td>
-<td>0.00357</td>
-<td>0.714085</td>
-<td>0.281136</td>
+<td>0.019077</td>
+<td>52.418853</td>
+<td>0.178521</td>
+<td>0.070284</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">2</th>
 <td>1/16</td>
 <td>0.014</td>
-<td>0.000001</td>
-<td>0.004092</td>
-<td>0.818354</td>
-<td>0.322187</td>
+<td>0.015319</td>
+<td>65.278592</td>
+<td>0.204588</td>
+<td>0.080547</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">3</th>
 <td>1/16</td>
 <td>0.016</td>
-<td>0.000001</td>
-<td>0.004592</td>
-<td>0.91841</td>
-<td>0.361579</td>
+<td>0.011973</td>
+<td>83.523616</td>
+<td>0.229602</td>
+<td>0.090395</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">4</th>
 <td>1/16</td>
 <td>0.020</td>
-<td>0.000001</td>
-<td>0.005529</td>
-<td>1.105883</td>
-<td>0.435387</td>
+<td>0.006516</td>
+<td>153.477223</td>
+<td>0.276471</td>
+<td>0.108847</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">5</th>
 <td>1/8</td>
 <td>0.028</td>
-<td>0.000003</td>
-<td>0.016367</td>
-<td>3.273415</td>
-<td>1.288746</td>
+<td>0.061276</td>
+<td>16.319648</td>
+<td>0.818354</td>
+<td>0.322187</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">6</th>
 <td>1/8</td>
 <td>0.035</td>
-<td>0.000004</td>
-<td>0.019814</td>
-<td>3.962749</td>
-<td>1.560137</td>
+<td>0.038933</td>
+<td>25.685238</td>
+<td>0.990687</td>
+<td>0.390034</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">7</th>
 <td>3/16</td>
 <td>0.028</td>
-<td>0.000005</td>
-<td>0.025583</td>
-<td>5.116554</td>
-<td>2.014391</td>
+<td>0.222558</td>
+<td>4.493218</td>
+<td>1.279138</td>
+<td>0.503598</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">8</th>
 <td>3/16</td>
 <td>0.035</td>
-<td>0.000006</td>
-<td>0.031333</td>
-<td>6.266673</td>
-<td>2.467194</td>
+<td>0.177692</td>
+<td>5.627730</td>
+<td>1.566668</td>
+<td>0.616798</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">9</th>
 <td>3/16</td>
 <td>0.049</td>
-<td>0.000008</td>
-<td>0.04206</td>
-<td>8.412086</td>
-<td>3.311845</td>
+<td>0.103095</td>
+<td>9.699803</td>
+<td>2.103022</td>
+<td>0.827961</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">10</th>
 <td>1/4</td>
 <td>0.028</td>
-<td>0.000007</td>
-<td>0.034798</td>
-<td>6.959693</td>
-<td>2.740037</td>
+<td>0.484389</td>
+<td>2.064455</td>
+<td>1.739923</td>
+<td>0.685009</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">11</th>
 <td>1/4</td>
 <td>0.035</td>
-<td>0.000008</td>
-<td>0.042853</td>
-<td>8.570596</td>
-<td>3.374251</td>
+<td>0.417000</td>
+<td>2.398082</td>
+<td>2.142649</td>
+<td>0.843563</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">12</th>
 <td>1/4</td>
 <td>0.049</td>
-<td>0.000011</td>
-<td>0.058188</td>
-<td>11.63758</td>
-<td>4.581724</td>
+<td>0.297357</td>
+<td>3.362961</td>
+<td>2.909395</td>
+<td>1.145431</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">13</th>
 <td>1/4</td>
 <td>0.065</td>
-<td>0.000014</td>
-<td>0.07445</td>
-<td>14.88993</td>
-<td>5.862177</td>
+<td>0.185333</td>
+<td>5.395684</td>
+<td>3.722482</td>
+<td>1.465544</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">14</th>
 <td>5/16</td>
 <td>0.035</td>
-<td>0.00001</td>
-<td>0.054373</td>
-<td>10.87452</td>
-<td>4.281307</td>
+<td>0.756858</td>
+<td>1.321251</td>
+<td>2.71863</td>
+<td>1.070327</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">15</th>
 <td>5/16</td>
 <td>0.049</td>
-<td>0.000014</td>
-<td>0.074315</td>
-<td>14.863073</td>
-<td>5.851603</td>
+<td>0.592169</td>
+<td>1.688707</td>
+<td>3.715768</td>
+<td>1.462901</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">16</th>
 <td>5/16</td>
 <td>0.065</td>
-<td>0.000018</td>
-<td>0.095843</td>
-<td>19.168645</td>
-<td>7.546711</td>
+<td>0.428664</td>
+<td>2.332831</td>
+<td>4.792161</td>
+<td>1.886678</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">17</th>
 <td>3/8</td>
 <td>0.035</td>
-<td>0.000013</td>
-<td>0.065892</td>
-<td>13.178444</td>
-<td>5.188364</td>
+<td>1.197266</td>
+<td>0.835236</td>
+<td>3.294611</td>
+<td>1.297091</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">18</th>
 <td>3/8</td>
 <td>0.049</td>
-<td>0.000017</td>
-<td>0.090443</td>
-<td>18.088566</td>
-<td>7.121483</td>
+<td>0.987531</td>
+<td>1.012627</td>
+<td>4.522142</td>
+<td>1.780371</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">19</th>
 <td>3/8</td>
 <td>0.065</td>
-<td>0.000023</td>
-<td>0.117237</td>
-<td>23.447361</td>
-<td>9.231244</td>
+<td>0.772544</td>
+<td>1.294425</td>
+<td>5.86184</td>
+<td>2.307811</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">20</th>
 <td>3/8</td>
 <td>0.083</td>
-<td>0.000028</td>
-<td>0.145769</td>
-<td>29.153719</td>
-<td>11.477842</td>
+<td>0.562191</td>
+<td>1.778756</td>
+<td>7.28843</td>
+<td>2.869461</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">21</th>
 <td>1/2</td>
 <td>0.035</td>
-<td>0.000017</td>
-<td>0.088931</td>
-<td>17.786291</td>
-<td>7.002477</td>
+<td>2.379731</td>
+<td>0.420215</td>
+<td>4.446573</td>
+<td>1.750619</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">22</th>
 <td>1/2</td>
 <td>0.049</td>
-<td>0.000024</td>
-<td>0.122698</td>
-<td>24.539553</td>
-<td>9.661241</td>
+<td>2.079903</td>
+<td>0.480792</td>
+<td>6.134888</td>
+<td>2.41531</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">23</th>
 <td>1/2</td>
 <td>0.065</td>
-<td>0.000031</td>
-<td>0.160024</td>
-<td>32.004792</td>
-<td>12.600312</td>
+<td>1.761954</td>
+<td>0.567552</td>
+<td>8.001198</td>
+<td>3.150078</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">24</th>
 <td>1/2</td>
 <td>0.083</td>
-<td>0.000039</td>
-<td>0.200405</td>
-<td>40.0809</td>
-<td>15.779882</td>
+<td>1.435767</td>
+<td>0.696492</td>
+<td>10.020225</td>
+<td>3.944971</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">25</th>
 <td>5/8</td>
 <td>0.049</td>
-<td>0.00003</td>
-<td>0.154953</td>
-<td>30.990539</td>
-<td>12.201</td>
+<td>3.574475</td>
+<td>0.279761</td>
+<td>7.747635</td>
+<td>3.05025</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">26</th>
 <td>5/8</td>
 <td>0.065</td>
-<td>0.000039</td>
-<td>0.202811</td>
-<td>40.562223</td>
-<td>15.969379</td>
+<td>3.153562</td>
+<td>0.317102</td>
+<td>10.140556</td>
+<td>3.992345</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">27</th>
 <td>5/8</td>
 <td>0.083</td>
-<td>0.000049</td>
-<td>0.25504</td>
-<td>51.008082</td>
-<td>20.081922</td>
+<td>2.711542</td>
+<td>0.368794</td>
+<td>12.75202</td>
+<td>5.02048</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">28</th>
 <td>5/8</td>
 <td>0.095</td>
-<td>0.000056</td>
-<td>0.288912</td>
-<td>57.782407</td>
-<td>22.748979</td>
+<td>2.435396</td>
+<td>0.410611</td>
+<td>14.445602</td>
+<td>5.687245</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">29</th>
 <td>3/4</td>
 <td>0.049</td>
-<td>0.000036</td>
-<td>0.187208</td>
-<td>37.441525</td>
-<td>14.740758</td>
+<td>5.471246</td>
+<td>0.182774</td>
+<td>9.360381</td>
+<td>3.68519</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">30</th>
 <td>3/4</td>
 <td>0.065</td>
-<td>0.000047</td>
-<td>0.245598</td>
-<td>49.119654</td>
-<td>19.338446</td>
+<td>4.947370</td>
+<td>0.202128</td>
+<td>12.279914</td>
+<td>4.834612</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">31</th>
 <td>3/4</td>
 <td>0.083</td>
-<td>0.00006</td>
-<td>0.309676</td>
-<td>61.935263</td>
-<td>24.383962</td>
+<td>4.389517</td>
+<td>0.227816</td>
+<td>15.483816</td>
+<td>6.09599</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">32</th>
 <td>3/4</td>
 <td>0.095</td>
-<td>0.000068</td>
-<td>0.351447</td>
-<td>70.289422</td>
-<td>27.673001</td>
+<td>4.036148</td>
+<td>0.247761</td>
+<td>17.572355</td>
+<td>6.91825</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">33</th>
 <td>3/4</td>
 <td>0.109</td>
-<td>0.000077</td>
-<td>0.399221</td>
-<td>79.844254</td>
-<td>31.434746</td>
+<td>3.642624</td>
+<td>0.274527</td>
+<td>19.961064</td>
+<td>7.858686</td>
 </tr>
 </tbody>
 </table>
@@ -1186,34 +763,34 @@ Integration Error (W/m): 2.88458e-11</code></pre>
 <h2 class="anchored" data-anchor-id="axial-temperature-profile">4. Axial temperature profile</h2>
 <p>For steady axial conduction with no heat entering or leaving the tube along its length, the heat rate is constant. The temperature profile is generally nonlinear because (k) changes with temperature.</p>
 <p>The profile below is calculated by inverting the cumulative integral of (k(T)).</p>
-<div id="ae92db4c" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730.000244140625,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="24">
+<div id="ae92db4c" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;panel-layout&quot;,&quot;value&quot;:{&quot;height&quot;:730.000244140625,&quot;visible&quot;:true,&quot;width&quot;:100}}" data-execution_count="70">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>n_points <span class="op">=</span> <span class="dv">200</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>x_m <span class="op">=</span> np.linspace(<span class="dv">0</span>, tube_length_m, n_points)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Cumulative integral of k(T) from the cold-end temperature to each temperature.</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>T_dense <span class="op">=</span> np.linspace(T_cold_K, T_warm_K, <span class="dv">5000</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>k_dense <span class="op">=</span> tube_material.thermal_conductivity(T_dense)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>cum_k <span class="op">=</span> np.concatenate([[<span class="fl">0.0</span>], np.cumsum(<span class="fl">0.5</span> <span class="op">*</span> (k_dense[<span class="dv">1</span>:] <span class="op">+</span> k_dense[:<span class="op">-</span><span class="dv">1</span>]) <span class="op">*</span> np.diff(T_dense))])</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># The cumulative integral fraction varies linearly with axial position.</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>position_fraction <span class="op">=</span> x_m <span class="op">/</span> tube_length_m</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> T_cold_K <span class="op">&lt;</span> T_warm_K:</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    target_integral <span class="op">=</span> position_fraction <span class="op">*</span> cum_k[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    T_profile <span class="op">=</span> np.interp(target_integral, cum_k, T_dense)</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    target_integral <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> position_fraction) <span class="op">*</span> cum_k[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    T_profile <span class="op">=</span> np.interp(target_integral, cum_k, T_dense)</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">5</span>))</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>plt.plot(x_m, T_profile)</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Distance from cold end (m)"</span>)</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Temperature (K)"</span>)</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Steady-state axial temperature profile along 316SS tube"</span>)</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>)</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>n_points <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>x_m <span class="op">=</span> np.linspace(<span class="dv">0</span>, tube_length_m, n_points)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Cumulative integral of k(T) from the cold-end temperature to each temperature.</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>T_dense <span class="op">=</span> np.linspace(T_cold_K, T_warm_K, <span class="dv">5000</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>k_dense <span class="op">=</span> tube_material.thermal_conductivity(T_dense)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>cum_k <span class="op">=</span> np.concatenate([[<span class="fl">0.0</span>], np.cumsum(<span class="fl">0.5</span> <span class="op">*</span> (k_dense[<span class="dv">1</span>:] <span class="op">+</span> k_dense[:<span class="op">-</span><span class="dv">1</span>]) <span class="op">*</span> np.diff(T_dense))])</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># The cumulative integral fraction varies linearly with axial position.</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>position_fraction <span class="op">=</span> x_m <span class="op">/</span> tube_length_m</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> T_cold_K <span class="op">&lt;</span> T_warm_K:</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    target_integral <span class="op">=</span> position_fraction <span class="op">*</span> cum_k[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    T_profile <span class="op">=</span> np.interp(target_integral, cum_k, T_dense)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    target_integral <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> position_fraction) <span class="op">*</span> cum_k[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    T_profile <span class="op">=</span> np.interp(target_integral, cum_k, T_dense)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">5</span>))</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>plt.plot(x_m, T_profile)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Distance from cold end (m)"</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Temperature (K)"</span>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Steady-state axial temperature profile along 316SS tube"</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1225,257 +802,257 @@ Integration Error (W/m): 2.88458e-11</code></pre>
 </div>
 </section>
 <section id="design-map" class="level2">
-<h2 class="anchored" data-anchor-id="design-map">4. Design Map</h2>
+<h2 class="anchored" data-anchor-id="design-map">5. Design Map</h2>
 <p>We can now generate a 2D design map where we plot the tube size against the heat flux per inch of length. Remember that the heat flux varies inversely with the length, so one can scale this map to any length of tube. The contour lines represent lines of constant flux, and the non-smooth nature is strictly because the 2D plot is designed around the discrete tube sizes. To smooth this out we could make a uniformly spaced y-axis and place the labels appropriately, but one would have to deal with overlapping labels where tube cross-sections are quite close between sizes. You will notice that the OD of the tubes isn’t grouped together on the y-axis and that is because the sizes are ordered by the cross-section of the tubing. For example, the 3/8” OD - 0.035” wall has <em>less</em> metal cross-section than the 1/4” - 0.065” wall tube.</p>
 <p>Note: I’ve also constrained the plot to sizes of 3/8” OD and less.</p>
-<div id="c8c6297d-fd2c-4b8b-85de-c78661757ee1" class="cell" data-execution_count="26">
+<div id="c8c6297d-fd2c-4b8b-85de-c78661757ee1" class="cell" data-execution_count="72">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fractions <span class="im">import</span> Fraction</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.colors <span class="im">as</span> mcolors</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.ticker <span class="im">as</span> ticker</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> cumulative_trapezoid</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _parse_inch_dimension(val):</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Converts floats, decimals, quote-marked strings, and fractions ('1/4', '1-1/2') to float."""</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pd.isna(val):</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.nan</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(val, (<span class="bu">int</span>, <span class="bu">float</span>, np.number)):</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(val)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="bu">str</span>(val).strip().replace(<span class="st">'"'</span>, <span class="st">""</span>).replace(<span class="st">"'"</span>, <span class="st">""</span>).replace(<span class="st">"in"</span>, <span class="st">""</span>).strip()</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> s:</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.nan</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(s)</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">ValueError</span>:</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Handle mixed numbers like '1-1/2' or '1 1/2', and simple fractions like '1/4'</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        s_clean <span class="op">=</span> s.replace(<span class="st">"-"</span>, <span class="st">" "</span>)</span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        parts <span class="op">=</span> s_clean.split()</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(parts) <span class="op">==</span> <span class="dv">2</span>:</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="bu">float</span>(parts[<span class="dv">0</span>]) <span class="op">+</span> <span class="bu">float</span>(Fraction(parts[<span class="dv">1</span>]))</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(Fraction(s_clean))</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> (<span class="pp">ValueError</span>, <span class="pp">ZeroDivisionError</span>):</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.nan</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_tube_heat_leak_2d_contours(</span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    tubes_df,</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    k_func,</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    T_min_table<span class="op">=</span><span class="fl">4.2</span>,</span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    T_max<span class="op">=</span><span class="fl">293.0</span>,</span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    tube_length_in<span class="op">=</span><span class="fl">1.0</span>,</span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    num_T_points<span class="op">=</span><span class="dv">150</span>,</span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    material_label<span class="op">=</span><span class="st">""</span>,</span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    log_color<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    contour_levels<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>    sort_by_area<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>    show_boiling_points<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>):</span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="co">    Creates a 2D heatmap with labeled contour overlays of Tube Size vs. Cold Temperature,</span></span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a><span class="co">    colored by axial heat leak in W (for tube_length_in) or W/in (when tube_length_in=1.0).</span></span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. Extract and parse OD and ID dimensions safely (handles floats, fractions, and quotes)</span></span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>    od_col <span class="op">=</span> tubes_df[(<span class="st">"OD"</span>, <span class="st">"in"</span>)]</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>    id_col <span class="op">=</span> tubes_df[(<span class="st">"ID"</span>, <span class="st">"in"</span>)]</span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>    wall_col <span class="op">=</span> tubes_df[(<span class="st">"Wall"</span>, <span class="st">"in"</span>)]</span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(od_col, pd.DataFrame):</span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>        od_col <span class="op">=</span> od_col.iloc[:, <span class="dv">0</span>]</span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(id_col, pd.DataFrame):</span>
-<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>        id_col <span class="op">=</span> id_col.iloc[:, <span class="dv">0</span>]</span>
-<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(wall_col, pd.DataFrame):</span>
-<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>        wall_col <span class="op">=</span> wall_col.iloc[:, <span class="dv">0</span>]</span>
-<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>    od_parsed <span class="op">=</span> od_col.<span class="bu">map</span>(_parse_inch_dimension)</span>
-<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>    id_parsed <span class="op">=</span> id_col.<span class="bu">map</span>(_parse_inch_dimension)</span>
-<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>    wall_parsed <span class="op">=</span> wall_col.<span class="bu">map</span>(_parse_inch_dimension)</span>
-<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>    valid_mask <span class="op">=</span> od_parsed.notna() <span class="op">&amp;</span> id_parsed.notna() <span class="op">&amp;</span> (od_parsed <span class="op">&gt;</span> id_parsed)</span>
-<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Optional upper bounds (with 1e-6 tolerance for exact float matches like 0.375 and 0.035)</span></span>
-<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>    valid_mask <span class="op">&amp;=</span> od_parsed <span class="op">&lt;=</span> (<span class="bu">float</span>(<span class="fl">0.375</span>) <span class="op">+</span> <span class="fl">1e-6</span>)</span>
-<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>    <span class="co"># valid_mask &amp;= wall_parsed &lt;= (float(max_wall_in) + 1e-6)</span></span>
-<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>    od_in <span class="op">=</span> od_parsed[valid_mask].to_numpy(dtype<span class="op">=</span><span class="bu">float</span>)</span>
-<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>    id_in <span class="op">=</span> id_parsed[valid_mask].to_numpy(dtype<span class="op">=</span><span class="bu">float</span>)</span>
-<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>    wall_in <span class="op">=</span> wall_parsed[valid_mask].to_numpy(dtype<span class="op">=</span><span class="bu">float</span>)</span>
-<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(od_in) <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(</span>
-<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>            <span class="ss">f"No valid tube dimensions found. Sample raw OD values: </span><span class="sc">{</span>od_col<span class="sc">.</span>head(<span class="dv">5</span>)<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. Compute metal cross-sectional area in m² (and optionally sort for smooth contours)</span></span>
-<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>    area_m2 <span class="op">=</span> (np.pi <span class="op">/</span> <span class="fl">4.0</span>) <span class="op">*</span> (od_in<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> id_in<span class="op">**</span><span class="dv">2</span>) <span class="op">*</span> (<span class="fl">0.0254</span><span class="op">**</span><span class="dv">2</span>)</span>
-<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> sort_by_area:</span>
-<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>        order <span class="op">=</span> np.argsort(area_m2)</span>
-<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>        od_in <span class="op">=</span> od_in[order]</span>
-<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>        id_in <span class="op">=</span> id_in[order]</span>
-<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>        area_m2 <span class="op">=</span> area_m2[order]</span>
-<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>        wall_in <span class="op">=</span> wall_in[order]</span>
-<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Format y-axis labels as OD × Wall Thickness</span></span>
-<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>    tube_labels <span class="op">=</span> [</span>
-<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f'</span><span class="sc">{</span>od<span class="sc">:.3f}</span><span class="ss">" OD × </span><span class="sc">{</span>wall<span class="sc">:.3f}</span><span class="ss">" wall'</span> <span class="cf">for</span> od, wall <span class="kw">in</span> <span class="bu">zip</span>(od_in, wall_in)</span>
-<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Create temperature grid and compute reverse cumulative integral from T_low to T_max</span></span>
-<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>    T_grid <span class="op">=</span> np.linspace(<span class="bu">float</span>(T_min_table), <span class="bu">float</span>(T_max), <span class="bu">int</span>(num_T_points))</span>
-<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>    k_vals <span class="op">=</span> np.array([<span class="bu">float</span>(k_func(T)) <span class="cf">for</span> T <span class="kw">in</span> T_grid], dtype<span class="op">=</span><span class="bu">float</span>)</span>
-<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>    integral_from_Tmin <span class="op">=</span> cumulative_trapezoid(k_vals, T_grid, initial<span class="op">=</span><span class="fl">0.0</span>)</span>
-<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a>    integral_T_to_Tmax <span class="op">=</span> integral_from_Tmin[<span class="op">-</span><span class="dv">1</span>] <span class="op">-</span> integral_from_Tmin</span>
-<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Drop the final point (T = T_max) where delta_T = 0 and heat leak = 0</span></span>
-<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a>    T_plot <span class="op">=</span> T_grid[:<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>    int_k_plot <span class="op">=</span> integral_T_to_Tmax[:<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Compute 2D heat leak matrix: shape (n_tubes, n_temps)</span></span>
-<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>    tube_length_m <span class="op">=</span> <span class="bu">float</span>(tube_length_in) <span class="op">*</span> <span class="fl">0.0254</span></span>
-<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>    heat_leak_matrix <span class="op">=</span> np.outer(area_m2 <span class="op">/</span> tube_length_m, int_k_plot).astype(<span class="bu">float</span>)</span>
-<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 5. Plot the 2D heatmap using matching center coordinates</span></span>
-<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>    y_centers <span class="op">=</span> np.arange(<span class="bu">len</span>(tube_labels), dtype<span class="op">=</span><span class="bu">float</span>) <span class="op">+</span> <span class="fl">0.5</span></span>
-<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">11</span>, <span class="bu">max</span>(<span class="fl">5.5</span>, <span class="bu">len</span>(tube_labels) <span class="op">*</span> <span class="fl">0.35</span>)))</span>
-<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>    norm <span class="op">=</span> mcolors.LogNorm() <span class="cf">if</span> log_color <span class="cf">else</span> <span class="va">None</span></span>
-<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a>    mesh <span class="op">=</span> ax.pcolormesh(</span>
-<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>        T_plot,</span>
-<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>        y_centers,</span>
-<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a>        heat_leak_matrix,</span>
-<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a>        shading<span class="op">=</span><span class="st">"nearest"</span>,</span>
-<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"inferno"</span>,</span>
-<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a>        norm<span class="op">=</span>norm,</span>
-<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 6. Overlay labeled contour lines</span></span>
-<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> contour_levels <span class="kw">is</span> <span class="va">None</span>:</span>
-<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>        locator <span class="op">=</span> ticker.LogLocator(base<span class="op">=</span><span class="fl">10.0</span>, subs<span class="op">=</span>(<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">5.0</span>))</span>
-<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a>        raw_levels <span class="op">=</span> locator.tick_values(</span>
-<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a>            heat_leak_matrix.<span class="bu">min</span>(), heat_leak_matrix.<span class="bu">max</span>()</span>
-<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a>        contour_levels <span class="op">=</span> [</span>
-<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a>            lvl</span>
-<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> lvl <span class="kw">in</span> raw_levels</span>
-<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> heat_leak_matrix.<span class="bu">min</span>() <span class="op">&lt;</span> lvl <span class="op">&lt;</span> heat_leak_matrix.<span class="bu">max</span>()</span>
-<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a>        ]</span>
-<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(contour_levels) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
-<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a>        contours <span class="op">=</span> ax.contour(</span>
-<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a>            T_plot,</span>
-<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a>            y_centers,</span>
-<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a>            heat_leak_matrix,</span>
-<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a>            levels<span class="op">=</span>contour_levels,</span>
-<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a>            colors<span class="op">=</span><span class="st">"white"</span>,</span>
-<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a>            linewidths<span class="op">=</span><span class="fl">1.2</span>,</span>
-<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a>            linestyles<span class="op">=</span><span class="st">"--"</span>,</span>
-<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a>            alpha<span class="op">=</span><span class="fl">0.9</span>,</span>
-<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a>        ax.clabel(</span>
-<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a>            contours,</span>
-<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a>            inline<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a>            inline_spacing<span class="op">=</span><span class="dv">8</span>,</span>
-<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a>            fontsize<span class="op">=</span><span class="fl">8.5</span>,</span>
-<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a>            fmt<span class="op">=</span><span class="kw">lambda</span> x: <span class="ss">f"</span><span class="sc">{</span>x<span class="sc">:.3g}</span><span class="ss">"</span>,</span>
-<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 7. Format axes and colorbar</span></span>
-<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(<span class="bu">float</span>(T_max), <span class="bu">float</span>(T_min_table))</span>
-<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a>    ax.set_yticks(y_centers)</span>
-<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a>    ax.set_yticklabels(tube_labels, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
-<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(</span>
-<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"Cold-End Temperature $T_</span><span class="ch">{{\\</span><span class="ss">mathrm</span><span class="ch">{{</span><span class="ss">low</span><span class="ch">}}}}</span><span class="ss">$ (K)  [Warm End = </span><span class="sc">{</span>T_max<span class="sc">:g}</span><span class="ss"> K]"</span>,</span>
-<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a>        fontsize<span class="op">=</span><span class="dv">11</span>,</span>
-<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">"Tube Size (OD × Wall Thickness)"</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>    ax.set_title(</span>
-<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"</span><span class="sc">{</span>material_label<span class="sc">}</span><span class="ss"> Axial Heat Leak with Contour Budgets"</span>,</span>
-<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>        fontsize<span class="op">=</span><span class="dv">13</span>,</span>
-<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a>        pad<span class="op">=</span><span class="dv">12</span>,</span>
-<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 8. Add vertical boiling point reference lines with staggered top labels</span></span>
-<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> show_boiling_points:</span>
-<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Format: (Label, Temp_K, vertical_offset_in_points)</span></span>
-<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 3 tiers (6, 22, 38 pt) guarantee O2, Ar, and N2 never collide</span></span>
-<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a>        boiling_points <span class="op">=</span> [</span>
-<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"O₂ (90.2 K)"</span>, <span class="fl">90.19</span>, <span class="dv">6</span>),</span>
-<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"Ar (87.3 K)"</span>, <span class="fl">87.30</span>, <span class="dv">22</span>),</span>
-<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"N₂ (77.4 K)"</span>, <span class="fl">77.36</span>, <span class="dv">38</span>),</span>
-<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"Ne (27.1 K)"</span>, <span class="fl">27.07</span>, <span class="dv">6</span>),</span>
-<span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"H₂ (20.3 K)"</span>, <span class="fl">20.28</span>, <span class="dv">22</span>),</span>
-<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a>        ]</span>
-<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> label, temp_k, y_offset_pt <span class="kw">in</span> boiling_points:</span>
-<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> T_min_table <span class="op">&lt;=</span> temp_k <span class="op">&lt;=</span> T_max:</span>
-<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a>            ax.axvline(</span>
-<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a>                x<span class="op">=</span>temp_k,</span>
-<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a>                color<span class="op">=</span><span class="st">"cyan"</span>,</span>
-<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a>                linestyle<span class="op">=</span><span class="st">":"</span>,</span>
-<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a>                linewidth<span class="op">=</span><span class="fl">1.5</span>,</span>
-<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a>                alpha<span class="op">=</span><span class="fl">0.95</span>,</span>
-<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a>                zorder<span class="op">=</span><span class="dv">5</span>,</span>
-<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a>            )</span>
-<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a>            ax.annotate(</span>
-<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a>                label,</span>
-<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a>                xy<span class="op">=</span>(temp_k, <span class="fl">1.0</span>),</span>
-<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a>                xycoords<span class="op">=</span>ax.get_xaxis_transform(),</span>
-<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a>                xytext<span class="op">=</span>(<span class="dv">0</span>, y_offset_pt),</span>
-<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a>                textcoords<span class="op">=</span><span class="st">"offset points"</span>,</span>
-<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a>                ha<span class="op">=</span><span class="st">"center"</span>,</span>
-<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a>                va<span class="op">=</span><span class="st">"bottom"</span>,</span>
-<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a>                fontsize<span class="op">=</span><span class="fl">8.5</span>,</span>
-<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a>                fontweight<span class="op">=</span><span class="st">"bold"</span>,</span>
-<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a>                color<span class="op">=</span><span class="st">"#005a70"</span>,</span>
-<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a>                bbox<span class="op">=</span><span class="bu">dict</span>(</span>
-<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a>                    boxstyle<span class="op">=</span><span class="st">"round,pad=0.18"</span>,</span>
-<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a>                    facecolor<span class="op">=</span><span class="st">"white"</span>,</span>
-<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a>                    edgecolor<span class="op">=</span><span class="st">"cyan"</span>,</span>
-<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a>                    alpha<span class="op">=</span><span class="fl">0.92</span>,</span>
-<span id="cb9-211"><a href="#cb9-211" aria-hidden="true" tabindex="-1"></a>                ),</span>
-<span id="cb9-212"><a href="#cb9-212" aria-hidden="true" tabindex="-1"></a>            )</span>
-<span id="cb9-213"><a href="#cb9-213" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-214"><a href="#cb9-214" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Increase title padding to clear the 38-pt top tier</span></span>
-<span id="cb9-215"><a href="#cb9-215" aria-hidden="true" tabindex="-1"></a>    ax.set_title(</span>
-<span id="cb9-216"><a href="#cb9-216" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"</span><span class="sc">{</span>material_label<span class="sc">}</span><span class="ss"> Axial Heat Leak with Contour Budgets"</span>,</span>
-<span id="cb9-217"><a href="#cb9-217" aria-hidden="true" tabindex="-1"></a>        fontsize<span class="op">=</span><span class="dv">13</span>,</span>
-<span id="cb9-218"><a href="#cb9-218" aria-hidden="true" tabindex="-1"></a>        pad<span class="op">=</span><span class="dv">55</span> <span class="cf">if</span> show_boiling_points <span class="cf">else</span> <span class="dv">12</span>,</span>
-<span id="cb9-219"><a href="#cb9-219" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb9-220"><a href="#cb9-220" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-221"><a href="#cb9-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-222"><a href="#cb9-222" aria-hidden="true" tabindex="-1"></a>    cbar_label <span class="op">=</span> (</span>
-<span id="cb9-223"><a href="#cb9-223" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Heat Leak per 1-in Tube (W/in)"</span></span>
-<span id="cb9-224"><a href="#cb9-224" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> tube_length_in <span class="op">==</span> <span class="fl">1.0</span></span>
-<span id="cb9-225"><a href="#cb9-225" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span> <span class="ss">f'Heat Leak for </span><span class="sc">{</span>tube_length_in<span class="sc">:g}</span><span class="ss">" Tube (W)'</span></span>
-<span id="cb9-226"><a href="#cb9-226" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb9-227"><a href="#cb9-227" aria-hidden="true" tabindex="-1"></a>    cbar <span class="op">=</span> plt.colorbar(mesh, ax<span class="op">=</span>ax, pad<span class="op">=</span><span class="fl">0.02</span>)</span>
-<span id="cb9-228"><a href="#cb9-228" aria-hidden="true" tabindex="-1"></a>    cbar.set_label(cbar_label, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
-<span id="cb9-229"><a href="#cb9-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-230"><a href="#cb9-230" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
-<span id="cb9-231"><a href="#cb9-231" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
-<span id="cb9-232"><a href="#cb9-232" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-233"><a href="#cb9-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-234"><a href="#cb9-234" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Example Execution ---</span></span>
-<span id="cb9-235"><a href="#cb9-235" aria-hidden="true" tabindex="-1"></a>plot_tube_heat_leak_2d_contours(</span>
-<span id="cb9-236"><a href="#cb9-236" aria-hidden="true" tabindex="-1"></a>    tubes_df<span class="op">=</span>tubes,</span>
-<span id="cb9-237"><a href="#cb9-237" aria-hidden="true" tabindex="-1"></a>    k_func<span class="op">=</span>tube_material.thermal_conductivity,</span>
-<span id="cb9-238"><a href="#cb9-238" aria-hidden="true" tabindex="-1"></a>    T_min_table<span class="op">=</span><span class="fl">4.2</span>,</span>
-<span id="cb9-239"><a href="#cb9-239" aria-hidden="true" tabindex="-1"></a>    T_max<span class="op">=</span><span class="fl">293.0</span>,</span>
-<span id="cb9-240"><a href="#cb9-240" aria-hidden="true" tabindex="-1"></a>    tube_length_in<span class="op">=</span><span class="fl">1.0</span>,</span>
-<span id="cb9-241"><a href="#cb9-241" aria-hidden="true" tabindex="-1"></a>    material_label<span class="op">=</span>tube_material.name(),</span>
-<span id="cb9-242"><a href="#cb9-242" aria-hidden="true" tabindex="-1"></a>    log_color<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb9-243"><a href="#cb9-243" aria-hidden="true" tabindex="-1"></a>    contour_levels<span class="op">=</span>np.logspace(<span class="op">-</span><span class="dv">2</span>,<span class="dv">2</span>,<span class="dv">20</span>),</span>
-<span id="cb9-244"><a href="#cb9-244" aria-hidden="true" tabindex="-1"></a>    show_boiling_points<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb9-245"><a href="#cb9-245" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fractions <span class="im">import</span> Fraction</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.colors <span class="im">as</span> mcolors</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.ticker <span class="im">as</span> ticker</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.integrate <span class="im">import</span> cumulative_trapezoid</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _parse_inch_dimension(val):</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Converts floats, decimals, quote-marked strings, and fractions ('1/4', '1-1/2') to float."""</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pd.isna(val):</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.nan</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(val, (<span class="bu">int</span>, <span class="bu">float</span>, np.number)):</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(val)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="bu">str</span>(val).strip().replace(<span class="st">'"'</span>, <span class="st">""</span>).replace(<span class="st">"'"</span>, <span class="st">""</span>).replace(<span class="st">"in"</span>, <span class="st">""</span>).strip()</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> s:</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.nan</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(s)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">ValueError</span>:</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Handle mixed numbers like '1-1/2' or '1 1/2', and simple fractions like '1/4'</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        s_clean <span class="op">=</span> s.replace(<span class="st">"-"</span>, <span class="st">" "</span>)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>        parts <span class="op">=</span> s_clean.split()</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(parts) <span class="op">==</span> <span class="dv">2</span>:</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="bu">float</span>(parts[<span class="dv">0</span>]) <span class="op">+</span> <span class="bu">float</span>(Fraction(parts[<span class="dv">1</span>]))</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(Fraction(s_clean))</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> (<span class="pp">ValueError</span>, <span class="pp">ZeroDivisionError</span>):</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.nan</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_tube_heat_leak_2d_contours(</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    tubes_df,</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    k_func,</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    T_min_table<span class="op">=</span><span class="fl">4.2</span>,</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    T_max<span class="op">=</span><span class="fl">293.0</span>,</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>    tube_length_in<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    num_T_points<span class="op">=</span><span class="dv">290</span>,</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    material_label<span class="op">=</span><span class="st">""</span>,</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    log_color<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>    contour_levels<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    sort_by_area<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>    show_boiling_points<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="co">    Creates a 2D heatmap with labeled contour overlays of Tube Size vs. Cold Temperature,</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="co">    colored by axial heat leak in W (for tube_length_in) or W/in (when tube_length_in=1.0).</span></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. Extract and parse OD and ID dimensions safely (handles floats, fractions, and quotes)</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>    od_col <span class="op">=</span> tubes_df[(<span class="st">"OD"</span>, <span class="st">"in"</span>)]</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>    id_col <span class="op">=</span> tubes_df[(<span class="st">"ID"</span>, <span class="st">"in"</span>)]</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>    wall_col <span class="op">=</span> tubes_df[(<span class="st">"Wall"</span>, <span class="st">"in"</span>)]</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(od_col, pd.DataFrame):</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>        od_col <span class="op">=</span> od_col.iloc[:, <span class="dv">0</span>]</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(id_col, pd.DataFrame):</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>        id_col <span class="op">=</span> id_col.iloc[:, <span class="dv">0</span>]</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(wall_col, pd.DataFrame):</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>        wall_col <span class="op">=</span> wall_col.iloc[:, <span class="dv">0</span>]</span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>    od_parsed <span class="op">=</span> od_col.<span class="bu">map</span>(_parse_inch_dimension)</span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>    id_parsed <span class="op">=</span> id_col.<span class="bu">map</span>(_parse_inch_dimension)</span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>    wall_parsed <span class="op">=</span> wall_col.<span class="bu">map</span>(_parse_inch_dimension)</span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a>    valid_mask <span class="op">=</span> od_parsed.notna() <span class="op">&amp;</span> id_parsed.notna() <span class="op">&amp;</span> (od_parsed <span class="op">&gt;</span> id_parsed)</span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Optional upper bounds (with 1e-6 tolerance for exact float matches like 0.375 and 0.035)</span></span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a>    valid_mask <span class="op">&amp;=</span> od_parsed <span class="op">&lt;=</span> (<span class="bu">float</span>(<span class="fl">0.375</span>) <span class="op">+</span> <span class="fl">1e-6</span>)</span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a>    <span class="co"># valid_mask &amp;= wall_parsed &lt;= (float(max_wall_in) + 1e-6)</span></span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a>    od_in <span class="op">=</span> od_parsed[valid_mask].to_numpy(dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>    id_in <span class="op">=</span> id_parsed[valid_mask].to_numpy(dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>    wall_in <span class="op">=</span> wall_parsed[valid_mask].to_numpy(dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(od_in) <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(</span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>            <span class="ss">f"No valid tube dimensions found. Sample raw OD values: </span><span class="sc">{</span>od_col<span class="sc">.</span>head(<span class="dv">5</span>)<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. Compute metal cross-sectional area in m² (and optionally sort for smooth contours)</span></span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a>    area_m2 <span class="op">=</span> (np.pi <span class="op">/</span> <span class="fl">4.0</span>) <span class="op">*</span> (od_in<span class="op">**</span><span class="dv">2</span> <span class="op">-</span> id_in<span class="op">**</span><span class="dv">2</span>) <span class="op">*</span> (<span class="fl">0.0254</span><span class="op">**</span><span class="dv">2</span>)</span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> sort_by_area:</span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>        order <span class="op">=</span> np.argsort(area_m2)</span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a>        od_in <span class="op">=</span> od_in[order]</span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a>        id_in <span class="op">=</span> id_in[order]</span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a>        area_m2 <span class="op">=</span> area_m2[order]</span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a>        wall_in <span class="op">=</span> wall_in[order]</span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Format y-axis labels as OD × Wall Thickness</span></span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a>    tube_labels <span class="op">=</span> [</span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f'</span><span class="sc">{</span>od<span class="sc">:.3f}</span><span class="ss">" OD × </span><span class="sc">{</span>wall<span class="sc">:.3f}</span><span class="ss">" wall'</span> <span class="cf">for</span> od, wall <span class="kw">in</span> <span class="bu">zip</span>(od_in, wall_in)</span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Create temperature grid and compute reverse cumulative integral from T_low to T_max</span></span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a>    T_grid <span class="op">=</span> np.linspace(<span class="bu">float</span>(T_min_table), <span class="bu">float</span>(T_max), <span class="bu">int</span>(num_T_points))</span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a>    k_vals <span class="op">=</span> np.array([<span class="bu">float</span>(k_func(T)) <span class="cf">for</span> T <span class="kw">in</span> T_grid], dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a>    integral_from_Tmin <span class="op">=</span> cumulative_trapezoid(k_vals, T_grid, initial<span class="op">=</span><span class="fl">0.0</span>)</span>
+<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a>    integral_T_to_Tmax <span class="op">=</span> integral_from_Tmin[<span class="op">-</span><span class="dv">1</span>] <span class="op">-</span> integral_from_Tmin</span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Drop the final point (T = T_max) where delta_T = 0 and heat leak = 0</span></span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a>    T_plot <span class="op">=</span> T_grid[:<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a>    int_k_plot <span class="op">=</span> integral_T_to_Tmax[:<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Compute 2D heat leak matrix: shape (n_tubes, n_temps)</span></span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a>    tube_length_m <span class="op">=</span> <span class="bu">float</span>(tube_length_in) <span class="op">*</span> <span class="fl">0.0254</span></span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a>    heat_leak_matrix <span class="op">=</span> np.outer(area_m2 <span class="op">/</span> tube_length_m, int_k_plot).astype(<span class="bu">float</span>)</span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 5. Plot the 2D heatmap using matching center coordinates</span></span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a>    y_centers <span class="op">=</span> np.arange(<span class="bu">len</span>(tube_labels), dtype<span class="op">=</span><span class="bu">float</span>) <span class="op">+</span> <span class="fl">0.5</span></span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="bu">max</span>(<span class="fl">5.5</span>, <span class="bu">len</span>(tube_labels) <span class="op">*</span> <span class="fl">0.35</span>)))</span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a>    norm <span class="op">=</span> mcolors.LogNorm() <span class="cf">if</span> log_color <span class="cf">else</span> <span class="va">None</span></span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a>    mesh <span class="op">=</span> ax.pcolormesh(</span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a>        T_plot,</span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a>        y_centers,</span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a>        heat_leak_matrix,</span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a>        shading<span class="op">=</span><span class="st">"nearest"</span>,</span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span><span class="st">"inferno"</span>,</span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a>        norm<span class="op">=</span>norm,</span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 6. Overlay labeled contour lines</span></span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> contour_levels <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a>        locator <span class="op">=</span> ticker.LogLocator(base<span class="op">=</span><span class="fl">10.0</span>, subs<span class="op">=</span>(<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">5.0</span>))</span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a>        raw_levels <span class="op">=</span> locator.tick_values(</span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a>            heat_leak_matrix.<span class="bu">min</span>(), heat_leak_matrix.<span class="bu">max</span>()</span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a>        contour_levels <span class="op">=</span> [</span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a>            lvl</span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> lvl <span class="kw">in</span> raw_levels</span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> heat_leak_matrix.<span class="bu">min</span>() <span class="op">&lt;</span> lvl <span class="op">&lt;</span> heat_leak_matrix.<span class="bu">max</span>()</span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(contour_levels) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>        contours <span class="op">=</span> ax.contour(</span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a>            T_plot,</span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>            y_centers,</span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a>            heat_leak_matrix,</span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a>            levels<span class="op">=</span>contour_levels,</span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>            colors<span class="op">=</span><span class="st">"white"</span>,</span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a>            linewidths<span class="op">=</span><span class="fl">1.2</span>,</span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>            linestyles<span class="op">=</span><span class="st">"--"</span>,</span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a>            alpha<span class="op">=</span><span class="fl">0.9</span>,</span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a>        ax.clabel(</span>
+<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a>            contours,</span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a>            inline<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a>            inline_spacing<span class="op">=</span><span class="dv">8</span>,</span>
+<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>            fontsize<span class="op">=</span><span class="fl">8.5</span>,</span>
+<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a>            fmt<span class="op">=</span><span class="kw">lambda</span> x: <span class="ss">f"</span><span class="sc">{</span>x<span class="sc">:.3g}</span><span class="ss">"</span>,</span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 7. Format axes and colorbar</span></span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a>    ax.set_xlim(<span class="bu">float</span>(T_max), <span class="bu">float</span>(T_min_table))</span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a>    ax.set_yticks(y_centers)</span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a>    ax.set_yticklabels(tube_labels, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a>    ax.set_xlabel(</span>
+<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"Cold-End Temperature $T_</span><span class="ch">{{\\</span><span class="ss">mathrm</span><span class="ch">{{</span><span class="ss">low</span><span class="ch">}}}}</span><span class="ss">$ (K)  [Warm End = </span><span class="sc">{</span>T_max<span class="sc">:g}</span><span class="ss"> K]"</span>,</span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a>        fontsize<span class="op">=</span><span class="dv">11</span>,</span>
+<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">"Tube Size (OD × Wall Thickness)"</span>, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a>    ax.set_title(</span>
+<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"</span><span class="sc">{</span>material_label<span class="sc">}</span><span class="ss"> Axial Heat Leak with Contour Budgets"</span>,</span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a>        fontsize<span class="op">=</span><span class="dv">13</span>,</span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a>        pad<span class="op">=</span><span class="dv">12</span>,</span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 8. Add vertical boiling point reference lines with staggered top labels</span></span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> show_boiling_points:</span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Format: (Label, Temp_K, vertical_offset_in_points)</span></span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 3 tiers (6, 22, 38 pt) guarantee O2, Ar, and N2 never collide</span></span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a>        boiling_points <span class="op">=</span> [</span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"O₂ (90.2 K)"</span>, <span class="fl">90.19</span>, <span class="dv">6</span>),</span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"Ar (87.3 K)"</span>, <span class="fl">87.30</span>, <span class="dv">22</span>),</span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"N₂ (77.4 K)"</span>, <span class="fl">77.36</span>, <span class="dv">38</span>),</span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"Ne (27.1 K)"</span>, <span class="fl">27.07</span>, <span class="dv">6</span>),</span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"H₂ (20.3 K)"</span>, <span class="fl">20.28</span>, <span class="dv">22</span>),</span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> label, temp_k, y_offset_pt <span class="kw">in</span> boiling_points:</span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> T_min_table <span class="op">&lt;=</span> temp_k <span class="op">&lt;=</span> T_max:</span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a>            ax.axvline(</span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a>                x<span class="op">=</span>temp_k,</span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a>                color<span class="op">=</span><span class="st">"cyan"</span>,</span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a>                linestyle<span class="op">=</span><span class="st">":"</span>,</span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a>                linewidth<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a>                alpha<span class="op">=</span><span class="fl">0.95</span>,</span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a>                zorder<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a>            ax.annotate(</span>
+<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a>                label,</span>
+<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a>                xy<span class="op">=</span>(temp_k, <span class="fl">1.0</span>),</span>
+<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a>                xycoords<span class="op">=</span>ax.get_xaxis_transform(),</span>
+<span id="cb7-199"><a href="#cb7-199" aria-hidden="true" tabindex="-1"></a>                xytext<span class="op">=</span>(<span class="dv">0</span>, y_offset_pt),</span>
+<span id="cb7-200"><a href="#cb7-200" aria-hidden="true" tabindex="-1"></a>                textcoords<span class="op">=</span><span class="st">"offset points"</span>,</span>
+<span id="cb7-201"><a href="#cb7-201" aria-hidden="true" tabindex="-1"></a>                ha<span class="op">=</span><span class="st">"center"</span>,</span>
+<span id="cb7-202"><a href="#cb7-202" aria-hidden="true" tabindex="-1"></a>                va<span class="op">=</span><span class="st">"bottom"</span>,</span>
+<span id="cb7-203"><a href="#cb7-203" aria-hidden="true" tabindex="-1"></a>                fontsize<span class="op">=</span><span class="fl">8.5</span>,</span>
+<span id="cb7-204"><a href="#cb7-204" aria-hidden="true" tabindex="-1"></a>                fontweight<span class="op">=</span><span class="st">"bold"</span>,</span>
+<span id="cb7-205"><a href="#cb7-205" aria-hidden="true" tabindex="-1"></a>                color<span class="op">=</span><span class="st">"#005a70"</span>,</span>
+<span id="cb7-206"><a href="#cb7-206" aria-hidden="true" tabindex="-1"></a>                bbox<span class="op">=</span><span class="bu">dict</span>(</span>
+<span id="cb7-207"><a href="#cb7-207" aria-hidden="true" tabindex="-1"></a>                    boxstyle<span class="op">=</span><span class="st">"round,pad=0.18"</span>,</span>
+<span id="cb7-208"><a href="#cb7-208" aria-hidden="true" tabindex="-1"></a>                    facecolor<span class="op">=</span><span class="st">"white"</span>,</span>
+<span id="cb7-209"><a href="#cb7-209" aria-hidden="true" tabindex="-1"></a>                    edgecolor<span class="op">=</span><span class="st">"cyan"</span>,</span>
+<span id="cb7-210"><a href="#cb7-210" aria-hidden="true" tabindex="-1"></a>                    alpha<span class="op">=</span><span class="fl">0.92</span>,</span>
+<span id="cb7-211"><a href="#cb7-211" aria-hidden="true" tabindex="-1"></a>                ),</span>
+<span id="cb7-212"><a href="#cb7-212" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb7-213"><a href="#cb7-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-214"><a href="#cb7-214" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Increase title padding to clear the 38-pt top tier</span></span>
+<span id="cb7-215"><a href="#cb7-215" aria-hidden="true" tabindex="-1"></a>    ax.set_title(</span>
+<span id="cb7-216"><a href="#cb7-216" aria-hidden="true" tabindex="-1"></a>        <span class="ss">f"</span><span class="sc">{</span>material_label<span class="sc">}</span><span class="ss"> Axial Heat Leak with Contour Budgets"</span>,</span>
+<span id="cb7-217"><a href="#cb7-217" aria-hidden="true" tabindex="-1"></a>        fontsize<span class="op">=</span><span class="dv">13</span>,</span>
+<span id="cb7-218"><a href="#cb7-218" aria-hidden="true" tabindex="-1"></a>        pad<span class="op">=</span><span class="dv">55</span> <span class="cf">if</span> show_boiling_points <span class="cf">else</span> <span class="dv">12</span>,</span>
+<span id="cb7-219"><a href="#cb7-219" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-220"><a href="#cb7-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-221"><a href="#cb7-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-222"><a href="#cb7-222" aria-hidden="true" tabindex="-1"></a>    cbar_label <span class="op">=</span> (</span>
+<span id="cb7-223"><a href="#cb7-223" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Heat Leak per 1-in Tube (W)"</span></span>
+<span id="cb7-224"><a href="#cb7-224" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> tube_length_in <span class="op">==</span> <span class="fl">1.0</span></span>
+<span id="cb7-225"><a href="#cb7-225" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span> <span class="ss">f'Heat Leak for </span><span class="sc">{</span>tube_length_in<span class="sc">:g}</span><span class="ss">" Tube (W)'</span></span>
+<span id="cb7-226"><a href="#cb7-226" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-227"><a href="#cb7-227" aria-hidden="true" tabindex="-1"></a>    cbar <span class="op">=</span> plt.colorbar(mesh, ax<span class="op">=</span>ax, pad<span class="op">=</span><span class="fl">0.02</span>)</span>
+<span id="cb7-228"><a href="#cb7-228" aria-hidden="true" tabindex="-1"></a>    cbar.set_label(cbar_label, fontsize<span class="op">=</span><span class="dv">11</span>)</span>
+<span id="cb7-229"><a href="#cb7-229" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-230"><a href="#cb7-230" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb7-231"><a href="#cb7-231" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb7-232"><a href="#cb7-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-233"><a href="#cb7-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-234"><a href="#cb7-234" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Example Execution ---</span></span>
+<span id="cb7-235"><a href="#cb7-235" aria-hidden="true" tabindex="-1"></a>plot_tube_heat_leak_2d_contours(</span>
+<span id="cb7-236"><a href="#cb7-236" aria-hidden="true" tabindex="-1"></a>    tubes_df<span class="op">=</span>tubes,</span>
+<span id="cb7-237"><a href="#cb7-237" aria-hidden="true" tabindex="-1"></a>    k_func<span class="op">=</span>tube_material.thermal_conductivity,</span>
+<span id="cb7-238"><a href="#cb7-238" aria-hidden="true" tabindex="-1"></a>    T_min_table<span class="op">=</span><span class="fl">4.2</span>,</span>
+<span id="cb7-239"><a href="#cb7-239" aria-hidden="true" tabindex="-1"></a>    T_max<span class="op">=</span><span class="fl">293.0</span>,</span>
+<span id="cb7-240"><a href="#cb7-240" aria-hidden="true" tabindex="-1"></a>    tube_length_in<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb7-241"><a href="#cb7-241" aria-hidden="true" tabindex="-1"></a>    material_label<span class="op">=</span>tube_material.name(),</span>
+<span id="cb7-242"><a href="#cb7-242" aria-hidden="true" tabindex="-1"></a>    log_color<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-243"><a href="#cb7-243" aria-hidden="true" tabindex="-1"></a>    contour_levels<span class="op">=</span>np.logspace(<span class="op">-</span><span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">25</span>),</span>
+<span id="cb7-244"><a href="#cb7-244" aria-hidden="true" tabindex="-1"></a>    show_boiling_points<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb7-245"><a href="#cb7-245" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1487,7 +1064,7 @@ Integration Error (W/m): 2.88458e-11</code></pre>
 </div>
 </section>
 <section id="important-assumptions-and-limitations" class="level2">
-<h2 class="anchored" data-anchor-id="important-assumptions-and-limitations">5. Important assumptions and limitations</h2>
+<h2 class="anchored" data-anchor-id="important-assumptions-and-limitations">6. Important assumptions and limitations</h2>
 <ol type="1">
 <li><strong>Axial conduction only:</strong> This estimates heat conducted through the tube metal along its length. It does not calculate radial conduction through the wall.</li>
 <li><strong>No distributed heat exchange:</strong> The tube is assumed thermally isolated along its length. If the tube is exposed to ambient air, radiation, insulation, or intermediate thermal anchors, the temperature profile and heat leak will change.</li>
